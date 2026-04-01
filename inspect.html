@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AL SANA: Professional Nester (Scrap % Edition)</title>
+  <style>
+    :root { --primary: #0f172a; --accent: #2563eb; --purple: #7c3aed; --bg: #f1f5f9; --border: #cbd5e1; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; font-size: 13px; color: #334155; }
+    .container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .input-area { background: #f8fafc; border: 2px dashed var(--accent); padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+    textarea { width: 100%; height: 100px; margin-top: 10px; border: 1px solid var(--border); border-radius: 4px; padding: 10px; font-family: monospace; }
+    .section-header { background: var(--primary); color: white; padding: 10px; border-radius: 6px; margin-top: 25px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    .mat-group { margin-top: 15px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; background: #fff; position: relative; }
+    .mat-title { font-size: 15px; font-weight: 800; color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .btn { padding: 10px 25px; border-radius: 6px; border: none; cursor: pointer; font-weight: 700; color: white; background: var(--accent); width: 100%; margin-top: 10px; font-size: 14px; }
+    .bar-row { height: 26px; background: #e2e8f0; border-radius: 4px; display: flex; margin-top: 8px; overflow: hidden; border: 1px solid #cbd5e1; }
+    .cut-segment { border-right: 1px solid white; background: var(--accent); color: white; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    .sheet-container { display: inline-block; margin-right: 20px; margin-bottom: 20px; vertical-align: top; }
+    canvas { border: 2px solid #334155; background: white; display: block; margin-top: 5px; box-shadow: 3px 3px 8px rgba(0,0,0,0.1); }
+    .summary-tag { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+    .scrap-tag { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; margin-left: 5px; }
+    .stock-picker { font-size: 11px; padding: 3px; border-radius: 4px; border: 1px solid var(--border); background: #f8fafc; cursor: pointer; }
+    .config-input { width: 55px; padding: 3px; border-radius: 4px; border: 1px solid #ccc; text-align: center; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="input-area">
+    <strong>PASTE EXCEL DATA (Material, D1, D2, THK, Length, Qty)</strong>
+    <textarea id="xlInput" placeholder="Paste rows here..."></textarea>
+    <button class="btn" onclick="processAll()">🚀 GENERATE OPTIMIZED NESTING</button>
+  </div>
+
+  <div class="section-header" style="background: var(--accent);">
+    <span>1. LINEAR NESTING (INDIVIDUAL STOCK SELECTION)</span>
+    <small>Adjust stock per profile below</small>
+  </div>
+  <div id="linearOutput"></div>
+
+  <div class="section-header" style="background: var(--purple);">
+    <span>2. PLATE NESTING (LANDSCAPE)</span>
+    <div style="font-size: 12px; display: flex; gap: 15px; align-items: center;">
+        <span>Stock: <input id="sw" class="config-input" type="number" value="2440"> x <input id="sl" class="config-input" type="number" value="1220"></span>
+        <span>Gap: <input id="kerf" class="config-input" type="number" value="2" step="0.5"> mm</span>
+    </div>
+  </div>
+  <div id="plateOutput"></div>
+</div>
+
+<script>
+let parsedData = [];
+let linearGroups = {};
+
+function processAll() {
+    const input = document.getElementById('xlInput').value.trim();
+    if (!input) return alert("Paste data first.");
+    const rows = input.split('\n');
+    parsedData = [];
+
+    rows.forEach(row => {
+        const cols = row.split('\t').map(c => c.trim());
+        if (cols.length < 5) return;
+        const mat = cols[0].toUpperCase();
+        const d1 = parseFloat(cols[1]) || 0;
+        const d2 = parseFloat(cols[2]) || 0;
+        const thk = parseFloat(cols[3]) || 0;
+        const len = parseFloat(cols[4]) || 0;
+        const qty = parseInt(cols[5]) || 0;
+        if (qty > 0) parsedData.push({ mat, d1, d2, thk, len, qty });
+    });
+
+    prepareLinearGroups();
+    renderLinear();
+    runPlates();
+}
+
+function prepareLinearGroups() {
+    linearGroups = {};
+    parsedData.filter(d => !d.mat.includes('PLATE')).forEach(d => {
+        const key = `${d.mat} (Size: ${d.d1} THK: ${d.thk}mm)`;
+        if (!linearGroups[key]) {
+            linearGroups[key] = { items: [], stock: 6000 };
+        }
+        linearGroups[key].items.push({ len: d.len, qty: d.qty });
+    });
+}
+
+function updateLinearStock(key, newStock) {
+    linearGroups[key].stock = parseFloat(newStock);
+    renderLinear();
+}
+
+function renderLinear() {
+    const out = document.getElementById('linearOutput');
+    out.innerHTML = '';
+
+    for (const [key, data] of Object.entries(linearGroups)) {
+        let cuts = [];
+        let totalUsedLength = 0;
+        const stock = data.stock;
+
+        data.items.forEach(d => {
+            totalUsedLength += (d.len * d.qty);
+            if (d.len > stock) {
+                let fullBars = Math.floor(d.len / stock);
+                let remainder = d.len % stock;
+                for(let q=0; q < d.qty; q++) {
+                    for(let f=0; f < fullBars; f++) cuts.push(stock);
+                    if(remainder > 0) cuts.push(remainder);
+                }
+            } else {
+                for(let i=0; i < d.qty; i++) cuts.push(d.len);
+            }
+        });
+
+        cuts.sort((a, b) => b - a);
+        let bars = [];
+        cuts.forEach(c => {
+            let fit = bars.find(b => (b.used + c) <= stock);
+            if (fit) { fit.parts.push(c); fit.used += c; }
+            else { bars.push({ parts: [c], used: c }); }
+        });
+
+        const totalStockLength = bars.length * stock;
+        const scrapPercent = totalStockLength > 0 ? (((totalStockLength - totalUsedLength) / totalStockLength) * 100).toFixed(2) : 0;
+
+        let html = `
+            <div class="mat-group">
+                <div class="mat-title">
+                    <span>${key}</span>
+                    <div>
+                        Stock: 
+                        <select class="stock-picker" onchange="updateLinearStock('${key}', this.value)">
+                            <option value="6000" ${stock==6000?'selected':''}>6000mm</option>
+                            <option value="12000" ${stock==12000?'selected':''}>12000mm</option>
+                        </select>
+                        <span class="summary-tag" style="margin-left:10px;">Procure: ${bars.length} Bars</span>
+                        <span class="scrap-tag">Scrap: ${scrapPercent}%</span>
+                    </div>
+                </div>`;
+        
+        bars.forEach((b, i) => {
+            html += `<div style="margin-top:8px;"><small>Bar #${i+1} (Waste: ${stock-b.used}mm)</small><div class="bar-row">`;
+            b.parts.forEach(p => html += `<div class="cut-segment" style="width:${(p/stock)*100}%">${p}</div>`);
+            html += `</div></div>`;
+        });
+        out.insertAdjacentHTML('beforeend', html + `</div>`);
+    }
+}
+
+function runPlates() {
+    const out = document.getElementById('plateOutput');
+    out.innerHTML = '';
+    const sW = parseFloat(document.getElementById('sw').value);
+    const sL = parseFloat(document.getElementById('sl').value);
+    const userKerf = parseFloat(document.getElementById('kerf').value) || 0;
+    
+    const displayW = Math.max(sW, sL);
+    const displayL = Math.min(sW, sL);
+    const sheetArea = displayW * displayL;
+
+    const groups = {};
+    parsedData.filter(d => d.mat.includes('PLATE')).forEach(d => {
+        const key = `PLATE THICKNESS: ${d.thk}mm`;
+        if (!groups[key]) groups[key] = [];
+        for(let i=0; i<d.qty; i++) groups[key].push({ w: d.d1, l: d.d2 });
+    });
+
+    for (const [title, parts] of Object.entries(groups)) {
+        let totalPartArea = 0;
+        parts.forEach(p => totalPartArea += (p.w * p.l));
+        
+        parts.sort((a,b) => (b.w * b.l) - (a.w * a.l));
+        let sheets = [{ y: 0, shelves: [], items: [] }];
+        
+        parts.forEach(p => {
+            let placed = false;
+            let pw = Math.max(p.w, p.l);
+            let pl = Math.min(p.w, p.l);
+            
+            for (let s of sheets) {
+                for (let sh of s.shelves) {
+                    if (pw <= sh.fw && pl <= sh.h) {
+                        s.items.push({ x: displayW - sh.fw, y: sh.y, w: pw, l: pl });
+                        sh.fw -= (pw + userKerf); placed = true; break;
+                    }
+                }
+                if (placed) break;
+                if (s.y + pl <= displayL) {
+                    s.shelves.push({ y: s.y, h: pl, fw: displayW - (pw + userKerf) });
+                    s.items.push({ x: 0, y: s.y, w: pw, l: pl });
+                    s.y += (pl + userKerf); placed = true; break;
+                }
+            }
+            if (!placed) sheets.push({ y: pl + userKerf, shelves: [{ y: 0, h: pl, fw: displayW - (pw + userKerf) }], items: [{ x: 0, y: 0, w: pw, l: pl }] });
+        });
+
+        const totalSheetArea = sheets.length * sheetArea;
+        const scrapPercent = totalSheetArea > 0 ? (((totalSheetArea - totalPartArea) / totalSheetArea) * 100).toFixed(2) : 0;
+
+        let html = `
+            <div class="mat-group">
+                <div class="mat-title">
+                    <span>${title}</span>
+                    <div>
+                        <span class="summary-tag">Procure: ${sheets.length} Sheets</span>
+                        <span class="scrap-tag">Scrap: ${scrapPercent}%</span>
+                    </div>
+                </div>`;
+        out.insertAdjacentHTML('beforeend', html);
+        const lastGroup = out.lastElementChild;
+        
+        sheets.forEach((sh, idx) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'sheet-container';
+            const scale = 400 / displayW; 
+            const canv = document.createElement('canvas');
+            canv.width = displayW * scale; canv.height = displayL * scale;
+            const ctx = canv.getContext('2d');
+            
+            sh.items.forEach(it => {
+                ctx.fillStyle = "#7c3aed"; ctx.globalAlpha = 0.8;
+                ctx.fillRect(it.x * scale, it.y * scale, it.w * scale, it.l * scale);
+                ctx.strokeStyle = "white"; ctx.strokeRect(it.x * scale, it.y * scale, it.w * scale, it.l * scale);
+                ctx.globalAlpha = 1; ctx.fillStyle = "white"; ctx.font = "bold 9px Arial"; ctx.textAlign = "center";
+                if(it.w * scale > 30) ctx.fillText(`${it.w}x${it.l}`, (it.x + it.w/2) * scale, (it.y + it.l/2) * scale + 4);
+            });
+            wrap.innerHTML = `<small>Sheet #${idx+1} (${displayW}x${displayL})</small>`;
+            wrap.appendChild(canv);
+            lastGroup.appendChild(wrap);
+        });
+    }
+}
+</script>
+</body>
+</html>
