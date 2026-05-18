@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Supplier Database Management System</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #27ae60;
+            --danger-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --table-border: #e2e8f0;
+            --send-color: #8e44ad;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            height: 42px;
+            box-sizing: border-box;
+        }
+
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-lock { background-color: var(--send-color); color: white; }
+        .btn-unlock { background-color: var(--primary-color); color: white; }
+        .btn-add { background-color: var(--accent-color); color: white; display: none; }
+        .btn-cancel { background-color: #95a5a6; color: white; }
+        
+        .search-bar {
+            padding: 10px 14px;
+            border: 2px solid #cbd5e1;
+            border-radius: 4px;
+            flex-grow: 1;
+            min-width: 260px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            height: 42px;
+            box-sizing: border-box;
+        }
+
+        .search-bar:focus { border-color: var(--primary-color); }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-locked { background-color: #ffebee; color: #c62828; }
+        .status-editable { background-color: #e8f5e9; color: #2e7d32; }
+        .status-loading { background-color: #e0f2fe; color: #0369a1; }
+
+        .table-responsive {
+            overflow-x: auto;
+            max-height: 650px;
+            border: 1px solid var(--table-border);
+            border-radius: 6px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+            min-width: 800px;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--table-border);
+            word-break: break-word;
+        }
+
+        tr:nth-child(even) { background-color: #f8fafc; }
+        tr:hover { background-color: #f1f5f9; }
+
+        .whatsapp-cell {
+            color: #128C7E;
+            font-weight: 600;
+        }
+        
+        body:not(.is-editable) .whatsapp-cell {
+            cursor: pointer;
+        }
+        body:not(.is-editable) .whatsapp-cell:hover {
+            text-decoration: underline;
+            background-color: #e8f5e9;
+        }
+
+        .editable-cell { outline: none; transition: background 0.15s ease; }
+        body.is-editable .editable-cell:focus { background-color: #fffde7; box-shadow: inset 0 0 0 2px #fbc02d; }
+        body.is-editable .editable-cell { background-color: #fffde7; cursor: text; }
+
+        .btn-row-del {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            display: none;
+        }
+        body.is-editable .btn-row-del { display: inline-block; }
+
+        /* Custom Modal System */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 2000; backdrop-filter: blur(4px);
+            align-items: center; justify-content: center;
+        }
+        .modal-card {
+            background: white; padding: 25px; border-radius: 12px; width: 88%; max-width: 360px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+        }
+        .modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .modal-card input {
+            width: 100%; height: 42px; padding: 8px; border: 1px solid #ccc;
+            border-radius: 4px; font-size: 16px; box-sizing: border-box; text-align: center; margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>
+        Al Sana Supplier & Vendors Contacts List
+        <span id="statusBadge" class="status-badge status-loading">⏳ Loading Sheets Data...</span>
+    </h2>
+
+    <div class="control-panel">
+        <button id="authBtn" class="btn btn-unlock" onclick="handleAuthClick()" disabled>🔓 Unlock Editing</button>
+        <button id="addRowBtn" class="btn btn-add" onclick="addNewRow()">➕ Add New Row</button>
+        <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Type to search instantly by company, name, phone, email, or remarks..." onkeyup="filterTable()">
+    </div>
+
+    <div class="table-responsive">
+        <table id="supplierTable">
+            <thead>
+                <tr>
+                    <th style="width: 70px;">SL NO</th>
+                    <th>COMPANY</th>
+                    <th>NAME</th>
+                    <th>MOB NO/Whatapp</th>
+                    <th>LAND NO</th>
+                    <th>EMAIL</th>
+                    <th>REMARKS</th>
+                    <th id="thAction" style="width: 50px; display: none;">X</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr><td colspan="7" style="text-align:center; padding:20px;">Fetching information from sheet...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="uiModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3 id="mTitle" style="margin:0; color:var(--primary-color);">Security Check</h3>
+        <p id="mMsg" style="color:#555; font-size: 14px; margin: 8px 0;"></p>
+        <div id="mExtra"></div>
+        <div id="mActions" class="modal-actions"></div>
+    </div>
+</div>
+
+<script>
+    // Embedded Active Web App URL Endpoint 
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxm_-nd0irqFveb1vhTa9U-0P1TYCndCUwYbvuysqz1UPnC08w_CCN1jduRPfX7SHcpHQ/exec"; 
+    const CONFIG_PASSWORD = "123"; 
+    
+    let isEditableMode = false;
+    let savedPasswordValue = ""; 
+
+    document.addEventListener('DOMContentLoaded', fetchDatabaseData);
+
+    function openModal(title, msg, buttons = [], isPassword = false) {
+        const m = document.getElementById('uiModal');
+        document.getElementById('mTitle').innerText = title;
+        document.getElementById('mMsg').innerText = msg;
+        const extra = document.getElementById('mExtra');
+        const actions = document.getElementById('mActions');
+        
+        extra.innerHTML = isPassword ? '<input type="password" id="mPass" placeholder="Enter Admin Password">' : '';
+        actions.innerHTML = '';
+
+        buttons.forEach(b => {
+            const btn = document.createElement('button');
+            btn.className = "btn " + (b.class || "btn-unlock");
+            btn.innerText = b.text;
+            btn.onclick = () => {
+                const pVal = isPassword ? document.getElementById('mPass').value : null;
+                m.style.display = 'none';
+                if(b.click) b.click(pVal);
+            };
+            actions.appendChild(btn);
+        });
+        m.style.display = 'flex';
+        if(isPassword) setTimeout(() => document.getElementById('mPass').focus(), 150);
+    }
+
+    // Connects via window.fetch seamlessly across domains
+    async function fetchDatabaseData() {
+        const statusBadge = document.getElementById('statusBadge');
+        const tableBody = document.getElementById('tableBody');
+        const authBtn = document.getElementById('authBtn');
+        
+        statusBadge.className = "status-badge status-loading";
+        statusBadge.innerText = "⏳ Loading Sheets Data...";
+
+        try {
+            const response = await fetch(GOOGLE_SCRIPT_URL);
+            const data = await response.json();
+            tableBody.innerHTML = "";
+            
+            if(!data.rows || data.rows.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='7' style='text-align:center; padding:20px;'>No records found in sheet.</td></tr>";
+            } else {
+                data.rows.forEach(row => {
+                    appendRowDOM(row[0], row[1], row[2], row[3], row[4], row[5], row[6]);
+                });
+            }
+
+            statusBadge.className = "status-badge status-locked";
+            statusBadge.innerText = "🔒 Read Only";
+            authBtn.removeAttribute('disabled');
+            applyCellEditState();
+            
+        } catch (err) {
+            statusBadge.className = "status-badge status-locked";
+            statusBadge.style.backgroundColor = "#ffebee";
+            statusBadge.style.color = "#c62828";
+            statusBadge.innerText = "⚠️ Load Error";
+            tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--danger-color);">Could not reach sheet. Verify deployment permissions or network connectivity.</td></tr>`;
+        }
+    }
+
+    function appendRowDOM(sl="", cp="", nm="", mb="", ld="", em="", rm="") {
+        const tableBody = document.getElementById('tableBody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="sl-cell">${sl}</td>
+            <td class="editable-cell">${cp}</td>
+            <td class="editable-cell">${nm}</td>
+            <td class="editable-cell whatsapp-cell" onclick="handleWhatsAppClick(this)">${mb}</td>
+            <td class="editable-cell">${ld}</td>
+            <td class="editable-cell">${em}</td>
+            <td class="editable-cell">${rm}</td>
+            <td class="action-cell" style="display: ${isEditableMode ? 'table-cell' : 'none'};">
+                <button class="btn-row-del" onclick="this.closest('tr').remove(); reindexSerialNumbers();">X</button>
+            </td>
+        `;
+        tableBody.appendChild(tr);
+    }
+
+    function handleAuthClick() {
+        if (!isEditableMode) {
+            openModal("Administration Access", "Provide security verification credentials to unlock inline editing:(123)", [
+                { text: "Verify & Unlock", class: "btn-unlock", click: (pass) => {
+                    if (pass === CONFIG_PASSWORD) {
+                        savedPasswordValue = pass;
+                        isEditableMode = true;
+                        applyCellEditState();
+                    } else {
+                        openModal("Error", "Incorrect password protection value entry.", [{ text: "OK" }]);
+                    }
+                }},
+                { text: "Cancel", class: "btn-cancel" }
+            ], true);
+        } else {
+            saveGridDataToCloud();
+        }
+    }
+
+    function applyCellEditState() {
+        const body = document.body;
+        const statusBadge = document.getElementById('statusBadge');
+        const authBtn = document.getElementById('authBtn');
+        const addRowBtn = document.getElementById('addRowBtn');
+        const thAction = document.getElementById('thAction');
+        const actionCells = document.querySelectorAll('.action-cell');
+        const cells = document.querySelectorAll('.editable-cell');
+
+        if (isEditableMode) {
+            body.classList.add('is-editable');
+            statusBadge.className = "status-badge status-editable";
+            statusBadge.innerText = "📝 Edit Mode Active";
+            authBtn.className = "btn btn-lock";
+            authBtn.innerText = "💾 Save & Lock Changes";
+            addRowBtn.style.display = "inline-flex";
+            if(thAction) thAction.style.display = "table-cell";
+            actionCells.forEach(c => c.style.display = "table-cell");
+            cells.forEach(cell => cell.setAttribute('contenteditable', 'true'));
+        } else {
+            body.classList.remove('is-editable');
+            authBtn.className = "btn btn-unlock";
+            authBtn.innerText = "🔓 Unlock Editing";
+            addRowBtn.style.display = "none";
+            if(thAction) thAction.style.display = "none";
+            actionCells.forEach(c => c.style.display = "none");
+            cells.forEach(cell => cell.setAttribute('contenteditable', 'false'));
+        }
+    }
+
+    function addNewRow() {
+        const tableBody = document.getElementById('tableBody');
+        if(tableBody.rows.length === 1 && tableBody.rows[0].cells.length === 1) {
+            tableBody.innerHTML = "";
+        }
+        
+        const count = tableBody.getElementsByTagName('tr').length;
+        const nextSl = count + 1;
+        appendRowDOM(nextSl, "", "", "", "", "", "");
+        
+        applyCellEditState();
+        
+        const rows = tableBody.getElementsByTagName('tr');
+        if(rows.length > 0) {
+            rows[rows.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function reindexSerialNumbers() {
+        const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+        for (let i = 0; i < rows.length; i++) {
+            const slCell = rows[i].querySelector('.sl-cell');
+            if(slCell) slCell.innerText = i + 1;
+        }
+    }
+
+    async function saveGridDataToCloud() {
+        const statusBadge = document.getElementById('statusBadge');
+        const authBtn = document.getElementById('authBtn');
+        const addRowBtn = document.getElementById('addRowBtn');
+        
+        statusBadge.className = "status-badge status-loading";
+        statusBadge.innerText = "⏳ Syncing with Google Sheets...";
+        authBtn.setAttribute('disabled', 'true');
+        addRowBtn.style.display = "none";
+
+        const tableRows = document.getElementById('tableBody').getElementsByTagName('tr');
+        const payload = { pass: savedPasswordValue, rows: [] };
+
+        if (tableRows.length > 0 && tableRows[0].querySelectorAll('td').length > 1) {
+            for (let i = 0; i < tableRows.length; i++) {
+                let cols = tableRows[i].getElementsByTagName('td');
+                payload.rows.push([
+                    cols[0].innerText.trim(), 
+                    cols[1].innerText.trim(), 
+                    cols[2].innerText.trim(), 
+                    cols[3].innerText.trim(), 
+                    cols[4].innerText.trim(), 
+                    cols[5].innerText.trim(), 
+                    cols[6].innerText.trim()  
+                ]);
+            }
+        }
+
+        try {
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+            });
+            const res = await response.json();
+            
+            authBtn.removeAttribute('disabled');
+            if (res.status === "error") {
+                openModal("Access Rejected", "Credential verification mismatch error.", [{ text: "Retry" }]);
+                isEditableMode = true;
+                applyCellEditState();
+            } else {
+                isEditableMode = false;
+                savedPasswordValue = ""; 
+                openModal("Success", "Database grid state saved to Google Sheets securely.", [{ text: "Acknowledge", class: "btn-lock" }]);
+                fetchDatabaseData();
+            }
+        } catch (e) {
+            authBtn.removeAttribute('disabled');
+            openModal("Sync Error", "Failed to push your table changes back to Google Sheets.", [{ text: "OK" }]);
+            isEditableMode = true;
+            applyCellEditState();
+        }
+    }
+
+    function handleWhatsAppClick(element) {
+        if (isEditableMode) return; 
+        
+        let targetText = element.innerText || element.textContent;
+        let cleanDigits = targetText.replace(/[^0-9]/g, '');
+        
+        if (cleanDigits.length > 5) {
+            window.open(`https://wa.me/${cleanDigits}`, '_blank');
+        } else {
+            openModal("Invalid Link", "The value inside this contact cell is empty or incorrectly formatted.", [{ text: "OK" }]);
+        }
+    }
+
+    function filterTable() {
+        let keyword = document.getElementById("searchInput").value.toUpperCase();
+        let rows = document.getElementById("tableBody").getElementsByTagName("tr");
+        
+        for (let i = 0; i < rows.length; i++) {
+            if(rows[i].cells.length <= 1) continue;
+            let dynamicRowText = rows[i].textContent || rows[i].innerText;
+            rows[i].style.display = (dynamicRowText.toUpperCase().indexOf(keyword) > -1) ? "" : "none";
+        }
+    }
+</script>
+
+</body>
+</html>
