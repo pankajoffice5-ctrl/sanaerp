@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Formatter</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+body{font-family:Arial,sans-serif;background:#0f172a;color:#fff;margin:0;padding:20px}
+textarea{width:100%;height:250px;background:#111827;color:#fff;padding:10px}
+button{padding:10px 20px;margin:5px;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th,td{border:1px solid #334155;padding:6px;font-size:12px}
+th{background:#1e293b}
+</style>
+</head>
+<body>
+<h1>Attendance Formatter</h1>
+<p>Paste ID + DateTime data copied from Excel.</p>
+
+<textarea id="raw"></textarea><br>
+<button onclick="processData()">Process</button>
+<button onclick="exportExcel()">Download Excel</button>
+
+<div id="count"></div>
+
+<table id="tbl">
+<thead>
+<tr>
+<th>Employee ID</th><th>Date</th><th>Day</th><th>Day/Night</th>
+<th>Total Time</th><th>Total Time -1 Hour</th><th>Over Time</th>
+<th>TIME1</th><th>TIME2</th><th>TIME3</th><th>TIME4</th><th>TIME5</th>
+<th>TIME6</th><th>TIME7</th><th>TIME8</th><th>TIME9</th><th>TIME10</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<script>
+let reportData=[];
+
+function convertMinutes(t){
+ let [time,ampm]=t.split(' ');
+ let [h,m]=time.split(':').map(Number);
+ if(ampm==='PM'&&h!==12)h+=12;
+ if(ampm==='AM'&&h===12)h=0;
+ return h*60+m;
+}
+
+function duration(mins){
+ let h=Math.floor(mins/60);
+ let m=mins%60;
+ return h+'h '+m+'m';
+}
+
+function getDayName(dateStr){
+ const [d,m,y]=dateStr.split('/').map(Number);
+ const dt=new Date(y,m-1,d);
+ return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dt.getDay()];
+}
+
+function processData(){
+ const raw=document.getElementById('raw').value.trim();
+ const lines=raw.split(/\r?\n/);
+ const grouped={};
+
+ lines.forEach(line=>{
+   const m=line.match(/(\d+)\s+(\d{2}[-\/]\d{2}[-\/]\d{4})\s+(\d{1,2}:\d{2}\s(?:AM|PM))/i);
+   if(!m) return;
+
+   const emp=m[1];
+   let date=m[2].replaceAll('-','/');
+   const time=m[3].toUpperCase();
+
+   let workDate=date;
+   if(convertMinutes(time)<=300){
+      let [d,mo,y]=date.split('/').map(Number);
+      let dt=new Date(y,mo-1,d);
+      dt.setDate(dt.getDate()-1);
+      workDate=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
+   }
+
+   const key=emp+'_'+workDate;
+   if(!grouped[key]) grouped[key]={emp,date:workDate,punches:[]};
+   grouped[key].punches.push(time);
+ });
+
+ reportData=[];
+ const tbody=document.querySelector('#tbl tbody');
+ tbody.innerHTML='';
+
+ Object.values(grouped).forEach(row=>{
+   row.punches.sort((a,b)=>convertMinutes(a)-convertMinutes(b));
+
+   const first=row.punches[0]||'';
+   const last=row.punches[row.punches.length-1]||'';
+
+   let diff=0;
+   if(first&&last){
+      diff=convertMinutes(last)-convertMinutes(first);
+      if(diff<0) diff+=1440;
+   }
+
+   const minus=Math.max(diff-60,0);
+   const ot=Math.max(minus-600,0);
+
+   const shift=first && convertMinutes(first)>=720 ? 'Night':'Day';
+
+   const rec={
+      "Employee ID":row.emp,
+      "Date":row.date,
+      "Day":getDayName(row.date),
+      "Day/Night":shift,
+      "Total Time":duration(diff),
+      "Total Time -1 Hour":duration(minus),
+      "Over Time":duration(ot)
+   };
+
+   for(let i=0;i<10;i++) rec['TIME'+(i+1)] = row.punches[i]||'';
+
+   reportData.push(rec);
+
+   let tr='<tr>';
+   Object.values(rec).forEach(v=>tr+='<td>'+v+'</td>');
+   tr+='</tr>';
+   tbody.insertAdjacentHTML('beforeend',tr);
+ });
+
+ reportData.sort((a,b)=>Number(a["Employee ID"])-Number(b["Employee ID"]));
+ document.getElementById('count').innerHTML='Records: '+reportData.length;
+}
+
+function exportExcel(){
+ if(!reportData.length){alert('Process data first');return;}
+ const ws=XLSX.utils.json_to_sheet(reportData);
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,'Attendance');
+ XLSX.writeFile(wb,'AI_Attendance_Formatter_FINAL.xlsx');
+}
+</script>
+</body>
+</html>
