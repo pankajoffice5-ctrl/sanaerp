@@ -151,27 +151,20 @@ select:focus{
 <input type="number" id="G11" placeholder="Enter Thickness">
 
     <label>Length (mm)</label>
-    <input type="number" id="length" placeholder="Enter Length">
+    <input type="number" id="length" value="1000">
 
     <label>Quantity</label>
     <input type="number" id="qty" placeholder="Enter Quantity" value="1" min="1">
 
     <div class="result">
 
-        <div class="result-row">
-            <div>Unit Weight</div>
-            <div><span id="result">0.000</span> kg/m</div>
-        </div>
+
 
         <div class="result-row">
             <div>Weight / Piece</div>
             <div><span id="pieceWeight">0.000</span> kg</div>
         </div>
 
-        <div class="result-row">
-            <div>Quantity</div>
-            <div><span id="showQty">1</span></div>
-        </div>
 
         <div class="result-row total-row">
             <div>Total Weight</div>
@@ -307,16 +300,13 @@ function calculate(){
 
     totalWeight = pieceWeight * qty;
 
-    document.getElementById("result").innerText =
-        isNaN(w) ? "0.000" : w.toFixed(3);
 
     document.getElementById("pieceWeight").innerText =
-        isNaN(pieceWeight) ? "0.000" : pieceWeight.toFixed(3);
+        isNaN(pieceWeight) ? "0.000" : pieceWeight.toFixed(2);
 
     document.getElementById("totalResult").innerText =
-        isNaN(totalWeight) ? "0.000" : totalWeight.toFixed(3);
+        isNaN(totalWeight) ? "0.000" : totalWeight.toFixed(2);
 
-    document.getElementById("showQty").innerText = qty;
 }
 
 
