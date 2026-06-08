@@ -135,8 +135,18 @@ function exportExcel(){
  const ws=XLSX.utils.json_to_sheet(reportData);
  const wb=XLSX.utils.book_new();
  XLSX.utils.book_append_sheet(wb,ws,'Attendance');
- XLSX.writeFile(wb,'AI_Attendance_Formatter_FINAL.xlsx');
+ XLSX.writeFile(wb,'Attendance_Formatter.xlsx');
 }
+</script>
+<script>
+function openPage(page) {
+  window.location.href = page;
+}
+
+// Disable right-click
+document.addEventListener("contextmenu", function(e) {
+  e.preventDefault();
+});
 </script>
 </body>
 </html>
