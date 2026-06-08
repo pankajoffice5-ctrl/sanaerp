@@ -426,6 +426,15 @@ updateInputHighlight();
 calculate();
 
 </script>
+<script>
+function openPage(page) {
+  window.location.href = page;
+}
 
+// Disable right-click
+document.addEventListener("contextmenu", function(e) {
+  e.preventDefault();
+});
+</script>
 </body>
 </html>
