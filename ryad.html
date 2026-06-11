@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rod Inspection System - DUBAL</title>
+    <title>Rod Inspection System - RYAD</title>
     <style>
         :root { 
             --primary: #2c3e50; 
@@ -30,7 +30,6 @@
         header { text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 14px; }
         header h2 { margin: 0; font-size: 18px; color: var(--primary); }
         
-        /* Updated Toolbar for Dropdown Layout Grid */
         .toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 14px; }
         .date-box { grid-column: span 2; }
         .date-box label { font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px; }
@@ -58,7 +57,6 @@
         .modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
         .modal-actions .btn { width: 100%; height: 44px; font-size: 13px; }
 
-        /* Loading Spinner Elements Style Rules */
         .loader-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; flex-direction:column; align-items:center; justify-content:center; gap:12px; transition: opacity 0.2s ease-in-out; }
         .spinner { width: 44px; height: 44px; border: 4px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
         .loader-text { font-size: 14px; font-weight: 600; color: var(--primary); letter-spacing: 0.3px; }
@@ -67,7 +65,7 @@
         @media (max-width: 600px) {
             thead { display: none; }
             tr { display: block; border: 1px solid #cbd5e1; margin-bottom: 10px; border-radius: 12px; padding: 12px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-            td { display: flex; justify-content: space-between; align-items: center; border: none; padding: 4px 0; }
+            td { display: flex; justify-content: space-between; align-items: center; border: none; padding: 4px 0; width: 100%; }
             td::before { content: attr(data-label); font-weight: 700; color: var(--text-muted); font-size: 11px; margin-right: 10px; }
             input, select { width: 58%; height: 36px; font-size: 12px; padding: 6px 8px; }
             .action-cell { width: 100% !important; justify-content: space-between; }
@@ -115,7 +113,7 @@
 
         <div class="table-wrap">
             <table id="entryTable">
-                <thead><tr><th>SR</th><th>ROD IDS</th><th>(A) Inner</th><th>(B) Middle</th><th>(C) Outer</th><th>SHIFT</th><th>REMARKS</th><th>DEL</th></tr></thead>
+                <thead><tr><th>SR</th><th>ROD IDS</th><th>(A) Inner</th><th>(B) Middle</th><th>(C) Outer</th><th>TJF</th><th>SHIFT</th><th>REMARKS</th><th>DEL</th></tr></thead>
                 <tbody id="entryBody"></tbody>
             </table>
         </div>
@@ -125,7 +123,7 @@
         <header><h2>Live Records</h2></header>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>DATE</th><th>SR</th><th>ROD IDS</th><th>(A) Inner</th><th>(B) Middle</th><th>(C) Outer</th><th>SHIFT</th><th>REMARKS</th><th>ACTION</th></tr></thead>
+                <thead><tr><th>DATE</th><th>SR</th><th>ROD IDS</th><th>(A) Inner</th><th>(B) Middle</th><th>(C) Outer</th><th>TJF</th><th>SHIFT</th><th>REMARKS</th><th>ACTION</th></tr></thead>
                 <tbody id="historyBody"></tbody>
             </table>
         </div>
@@ -146,7 +144,6 @@
     let rawData = [];
     let pageSource = "DUBAL";
 
-    // Show/Hide Spinner Utilities
     function showLoader(text = "Syncing Live Sheet Data...") {
         document.getElementById('loadingText').innerText = text;
         document.getElementById('loadingOverlay').style.display = 'flex';
@@ -187,9 +184,10 @@
         tr.innerHTML = `
             <td data-label="SR"><input type="number" value="${nextSr}" class="sr-in"></td>
             <td data-label="ROD IDS"><input type="number" value="${d ? d.rod : ''}" class="rd-in"></td>
-            <td data-label="(A) Inner"><select class="s-a"><option ${!d || d.a=='✔' || d.a=='OK'?'selected':''}>✔</option><option ${d?.a=='Repair'?'selected':''}>Repair</option></select></td>
-            <td data-label="(B) Middle"><select class="s-b"><option ${!d || d.b=='✔' || d.b=='OK'?'selected':''}>✔</option><option ${d?.b=='Repair'?'selected':''}>Repair</option></select></td>
-            <td data-label="(C) Outer"><select class="s-c"><option ${!d || d.c=='✔' || d.c=='OK'?'selected':''}>✔</option><option ${d?.c=='Repair'?'selected':''}>Repair</option></select></td>
+            <td data-label="(A) Inner"><select class="s-a"><option ${!d || d.a=='N/A'?'selected':''}>N/A</option><option ${d?.a=='✔'?'selected':''}>✔</option></select></td>
+            <td data-label="(B) Middle"><select class="s-b"><option ${!d || d.b=='N/A'?'selected':''}>N/A</option><option ${d?.b=='✔'?'selected':''}>✔</option></select></td>
+            <td data-label="(C) Outer"><select class="s-c"><option ${!d || d.c=='N/A'?'selected':''}>N/A</option><option ${d?.c=='✔'?'selected':''}>✔</option></select></td>
+            <td data-label="TJF"><select class="s-tjf"><option ${!d || d.tjf=='N/A'?'selected':''}>N/A</option><option ${d?.tjf=='✔'?'selected':''}>✔</option></select></td>
             <td data-label="SHIFT"><select class="s-shift"><option ${d?.shift=='Day'?'selected':''}>Day</option><option ${d?.shift=='Night'?'selected':''}>Night</option></select></td>
             <td data-label="REMARKS"><input type="text" value="${d ? d.remarks : ''}" class="remarks-in" placeholder="Remarks"></td>
             <td data-label="DEL"><button class="btn btn-delete" style="height:34px; width:40px; margin:auto;" onclick="this.closest('tr').remove()">X</button></td>
@@ -229,13 +227,18 @@
             const body = document.getElementById('historyBody');
             body.innerHTML = data.reverse().map(r => `
                 <tr>
-                    <td data-label="DATE">${r[0]}</td><td data-label="SR">${r[1]}</td><td data-label="ROD IDS">${r[2]}</td>
-                    <td data-label="(A) Inner">${r[3]}</td><td data-label="(B) Middle">${r[4]}</td><td data-label="(C) Outer">${r[5]}</td>
-                    <td data-label="SHIFT">${r[6]}</td>
-                    <td data-label="REMARKS">${r[7] || ''}</td>
+                    <td data-label="DATE">${r[0]}</td>
+                    <td data-label="SR">${r[1]}</td>
+                    <td data-label="ROD IDS">${r[2]}</td>
+                    <td data-label="(A) Inner">${r[3]}</td>
+                    <td data-label="(B) Middle">${r[4]}</td>
+                    <td data-label="(C) Outer">${r[5]}</td>
+                    <td data-label="TJF">${r[6]}</td>
+                    <td data-label="SHIFT">${r[7]}</td>
+                    <td data-label="REMARKS">${r[8] || ''}</td>
                     <td class="action-cell">
-                        <button class="action-btn" onclick="editRow(${r[8]},'${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[6]}','${r[7]}')">Edit</button>
-                        <button class="btn btn-delete" style="height:30px; padding:0 10px;" onclick="askDel(${r[8]})">X</button>
+                        <button class="action-btn" onclick="editRow(${r[9]},'${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[6]}','${r[7]}','${r[8]}')">Edit</button>
+                        <button class="btn btn-delete" style="height:30px; padding:0 10px;" onclick="askDel(${r[9]})">X</button>
                     </td>
                 </tr>`).join('');
                 
@@ -243,7 +246,7 @@
                 addRow();
             }
         } catch (e) { 
-            console.log("Offline context status"); 
+            console.log("Offline context status", e); 
             if(document.getElementById("entryBody").rows.length === 0) addRow();
         } finally {
             hideLoader();
@@ -265,6 +268,7 @@
                 cutting: r.querySelector('.s-a').value,
                 welding: r.querySelector('.s-b').value,
                 helper: r.querySelector('.s-c').value,
+                tjf: r.querySelector('.s-tjf').value,
                 shift: r.querySelector('.s-shift').value,
                 remarks: r.querySelector('.remarks-in').value
             });
@@ -302,29 +306,27 @@
         }}, {text: "Cancel"}], true);
     }
 
-    function editRow(rowNum, date, sr, rod, a, b, c, shift, remarks) {
+    function editRow(rowNum, date, sr, rod, a, b, c, tjf, shift, remarks) {
         document.getElementById('reportDate').value = date;
         document.getElementById('entryBody').innerHTML = "";
-        addRow({rowNum, sr, rod, a, b, c, shift, remarks});
+        addRow({rowNum, sr, rod, a, b, c, tjf, shift, remarks});
         window.scrollTo(0,0);
     }
 
-    // New Filtered Download Processing Architecture
     function downloadDataChoice() {
         const scope = document.getElementById('downloadScope').value;
-        const targetDate = document.getElementById('reportDate').value; // yyyy-MM-dd
+        const targetDate = document.getElementById('reportDate').value;
         
-        let out = "Date,SR,Rod,(A) Inner,(B) Middle,(C) Outer,Shift,Remarks\n";
-        const sorted = JSON.parse(JSON.stringify(rawData)).reverse(); // Reset back to natural historical order
+        let out = "Date,SR,Rod ID,(A) Inner,(B) Middle,(C) Outer,TJF,Shift,Remarks\n";
+        const sorted = JSON.parse(JSON.stringify(rawData)).reverse();
         
         let targetFileName = `${pageSource}_Full_Inspection_Log.csv`;
         let recordCounter = 0;
 
         sorted.forEach(r => {
-            const recordDate = r[0]; // Format matches yyyy-MM-dd
-            
+            const recordDate = r[0];
             if (scope === 'full' || (scope === 'selected' && recordDate === targetDate)) {
-                out += `${r[0]},${r[1]},${r[2]},${r[3]},${r[4]},${r[5]},${r[6]},${r[7] || ''}\n`;
+                out += `${r[0]},${r[1]},${r[2]},${r[3]},${r[4]},${r[5]},${r[6]},${r[7]},${r[8] || ''}\n`;
                 recordCounter++;
             }
         });
@@ -337,7 +339,6 @@
             targetFileName = `${pageSource}_Log_${targetDate}.csv`;
         }
         
-        // Exporting file content structure
         const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), out], { type: 'text/csv;charset=utf-8;' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -345,8 +346,7 @@
         a.click();
     }
 
-    // Disable right-click for AdSense security
-document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+    document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
 </script>
 </body>
 </html>
