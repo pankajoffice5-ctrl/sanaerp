@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rod Inspection System - DUBAL</title>
+    <style>
+        :root { 
+            --primary: #2c3e50; 
+            --accent: #3498db; 
+            --success: #27ae60; 
+            --danger: #e74c3c; 
+            --send: #8e44ad; 
+            --bg: #f0f2f5; 
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: var(--bg); padding: 10px 8px; margin: 0; color: var(--text-main); }
+        
+        .nav-bar { max-width: 650px; margin: 0 auto 14px auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .nav-btn { height: 44px; background: var(--primary); color: white; text-decoration: none; font-weight: bold; font-size: 13px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: 0.15s; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .nav-btn:hover { background: var(--accent); }
+        .nav-btn.active { background: var(--success); pointer-events: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.15); }
+        .nav-btn:active { transform: scale(0.98); }
+
+        .container { max-width: 650px; margin: 0 auto; }
+        .card { background: var(--card-bg); padding: 14px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 14px; }
+        header { text-align: center; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 14px; }
+        header h2 { margin: 0; font-size: 18px; color: var(--primary); }
+        
+        /* Updated Toolbar for Dropdown Layout Grid */
+        .toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 14px; }
+        .date-box { grid-column: span 2; }
+        .date-box label { font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        .download-box { display: flex; flex-direction: column; gap: 4px; }
+        .download-box label { font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; }
+        .download-box select { height: 46px; }
+
+        .btn { height: 46px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; transition: 0.15s; font-size: 13px; }
+        .btn:active { transform: scale(0.98); }
+        .btn-add { background: var(--success); align-self: flex-end; height: 46px; margin-top: 15px; }
+        .btn-send { background: var(--send); grid-column: span 2; font-size: 14px; height: 48px; }
+        .btn-download { background: var(--primary); align-self: flex-end; height: 46px; }
+        .btn-delete { background: var(--danger); font-size: 12px; }
+        input, select { width: 100%; height: 44px; padding: 8px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; outline: none; background: #fff; }
+        input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.15); }
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th { background: var(--primary); color: white; padding: 8px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { border-bottom: 1px solid #f1f5f9; padding: 10px 6px; text-align: center; font-size: 13px; vertical-align: middle; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-card { background: white; padding: 20px; border-radius: 20px; width: 88%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .modal-card h3 { margin-top: 0; color: var(--primary); font-size: 18px; }
+        .modal-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 16px; }
+        .modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .modal-actions .btn { width: 100%; height: 44px; font-size: 13px; }
+
+        /* Loading Spinner Elements Style Rules */
+        .loader-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; flex-direction:column; align-items:center; justify-content:center; gap:12px; transition: opacity 0.2s ease-in-out; }
+        .spinner { width: 44px; height: 44px; border: 4px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .loader-text { font-size: 14px; font-weight: 600; color: var(--primary); letter-spacing: 0.3px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        @media (max-width: 600px) {
+            thead { display: none; }
+            tr { display: block; border: 1px solid #cbd5e1; margin-bottom: 10px; border-radius: 12px; padding: 12px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+            td { display: flex; justify-content: space-between; align-items: center; border: none; padding: 4px 0; }
+            td::before { content: attr(data-label); font-weight: 700; color: var(--text-muted); font-size: 11px; margin-right: 10px; }
+            input, select { width: 58%; height: 36px; font-size: 12px; padding: 6px 8px; }
+            .action-cell { width: 100% !important; justify-content: space-between; }
+            .action-btn, .btn-delete { width: 48% !important; height: 34px !important; margin: 0 !important; }
+            .btn-add { margin-top: 0; }
+        }
+        .action-cell { display: flex; gap: 6px; justify-content: center; align-items: center; }
+        .action-btn { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="loader-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loader-text" id="loadingText">Syncing Live Sheet Data...</div>
+</div>
+
+<nav class="nav-bar">
+    <a href="dubal.html" class="nav-btn">DUBAL</a>
+    <a href="emal.html" class="nav-btn active">EMAL</a>
+    <a href="ryad.html" class="nav-btn">RYAD</a>
+</nav>
+
+<div class="container">
+    <div class="card">
+        <header><h2 id="pageTitle">Rod Inspection Entry</h2></header>
+        <div class="toolbar">
+            <div class="date-box">
+                <label>INSPECTION DATE</label>
+                <input type="date" id="reportDate">
+            </div>
+            <button class="btn btn-add" onclick="addRow()">+ Add Rod</button>
+            
+            <div class="download-box">
+                <label>EXCEL DOWNLOAD RANGE</label>
+                <select id="downloadScope">
+                    <option value="selected">Selected Date Only</option>
+                    <option value="full">Full Complete Log</option>
+                </select>
+            </div>
+            <button class="btn btn-download" onclick="downloadDataChoice()">Download</button>
+            
+            <button class="btn btn-send" onclick="askSubmitPassword()">Verify & Submit</button>
+        </div>
+
+        <div class="table-wrap">
+            <table id="entryTable">
+                <thead><tr><th>SR</th><th>ROD IDS</th><th>(A) Inner</th><th>(B) Middle</th><th>(C) Outer</th><th>SHIFT</th><th>REMARKS</th><th>DEL</th></tr></thead>
+                <tbody id="entryBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <header><h2>Live Records</h2></header>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>DATE</th><th>SR</th><th>ROD IDS</th><th>(A) Inner</th><th>(B) Middle</th><th>(C) Outer</th><th>SHIFT</th><th>REMARKS</th><th>ACTION</th></tr></thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="uiModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3 id="mTitle">Message</h3>
+        <p id="mMsg"></p>
+        <div id="mExtra"></div> 
+        <div class="modal-actions" id="mActions"></div>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyu67OJpHuBkVdG69OO25JYqBfqSVdGjGpT6q5pVPv_DiLMei5YGfgiX1g4mc19UMEA/exec";
+    let rawData = [];
+    let pageSource = "DUBAL";
+
+    // Show/Hide Spinner Utilities
+    function showLoader(text = "Syncing Live Sheet Data...") {
+        document.getElementById('loadingText').innerText = text;
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+    function hideLoader() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        document.getElementById('reportDate').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        
+        const activeNav = document.querySelector('.nav-btn.active');
+        if (activeNav) {
+            pageSource = activeNav.innerText.trim();
+            document.getElementById('pageTitle').innerText = `${pageSource} - Rod Inspection Entry`;
+        }
+        
+        fetchHistory();
+    });
+
+    function addRow(d = null) {
+        const body = document.getElementById("entryBody");
+        let nextSr = 1001;
+        
+        if (d) {
+            nextSr = d.sr;
+        } else if (body.rows.length > 0) {
+            nextSr = parseInt(body.lastElementChild.querySelector('.sr-in').value) + 1;
+        } else if (rawData.length > 0) {
+            const maxHistorySr = Math.max(...rawData.map(r => parseInt(r[1]) || 0));
+            if (maxHistorySr > 0) nextSr = maxHistorySr + 1;
+        }
+
+        const tr = document.createElement("tr");
+        if(d && d.rowNum) tr.setAttribute('data-sheet-row', d.rowNum);
+        
+        tr.innerHTML = `
+            <td data-label="SR"><input type="number" value="${nextSr}" class="sr-in"></td>
+            <td data-label="ROD IDS"><input type="number" value="${d ? d.rod : ''}" class="rd-in"></td>
+            <td data-label="(A) Inner"><select class="s-a"><option ${!d || d.a=='✔' || d.a=='OK'?'selected':''}>✔</option><option ${d?.a=='Repair'?'selected':''}>Repair</option></select></td>
+            <td data-label="(B) Middle"><select class="s-b"><option ${!d || d.b=='✔' || d.b=='OK'?'selected':''}>✔</option><option ${d?.b=='Repair'?'selected':''}>Repair</option></select></td>
+            <td data-label="(C) Outer"><select class="s-c"><option ${!d || d.c=='✔' || d.c=='OK'?'selected':''}>✔</option><option ${d?.c=='Repair'?'selected':''}>Repair</option></select></td>
+            <td data-label="SHIFT"><select class="s-shift"><option ${d?.shift=='Day'?'selected':''}>Day</option><option ${d?.shift=='Night'?'selected':''}>Night</option></select></td>
+            <td data-label="REMARKS"><input type="text" value="${d ? d.remarks : ''}" class="remarks-in" placeholder="Remarks"></td>
+            <td data-label="DEL"><button class="btn btn-delete" style="height:34px; width:40px; margin:auto;" onclick="this.closest('tr').remove()">X</button></td>
+        `;
+        body.appendChild(tr);
+    }
+
+    function openModal(title, msg, buttons = [], isPassword = false) {
+        const m = document.getElementById('uiModal');
+        document.getElementById('mTitle').innerText = title;
+        document.getElementById('mMsg').innerText = msg;
+        const extra = document.getElementById('mExtra');
+        const actions = document.getElementById('mActions');
+        extra.innerHTML = isPassword ? '<input type="password" id="mPass" placeholder="Password" style="text-align:center;">' : '';
+        actions.innerHTML = '';
+        buttons.forEach(b => {
+            const btn = document.createElement('button');
+            btn.className = "btn " + (b.class || "");
+            btn.innerText = b.text;
+            btn.onclick = () => {
+                const pVal = isPassword ? document.getElementById('mPass').value : null;
+                m.style.display = 'none';
+                if(b.click) b.click(pVal);
+            };
+            actions.appendChild(btn);
+        });
+        m.style.display = 'flex';
+    }
+
+    async function fetchHistory() {
+        showLoader("Fetching Latest Records...");
+        try {
+            const response = await fetch(`${WEB_APP_URL}?source=${encodeURIComponent(pageSource)}`);
+            const data = await response.json();
+            rawData = JSON.parse(JSON.stringify(data));
+            
+            const body = document.getElementById('historyBody');
+            body.innerHTML = data.reverse().map(r => `
+                <tr>
+                    <td data-label="DATE">${r[0]}</td><td data-label="SR">${r[1]}</td><td data-label="ROD IDS">${r[2]}</td>
+                    <td data-label="(A) Inner">${r[3]}</td><td data-label="(B) Middle">${r[4]}</td><td data-label="(C) Outer">${r[5]}</td>
+                    <td data-label="SHIFT">${r[6]}</td>
+                    <td data-label="REMARKS">${r[7] || ''}</td>
+                    <td class="action-cell">
+                        <button class="action-btn" onclick="editRow(${r[8]},'${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[6]}','${r[7]}')">Edit</button>
+                        <button class="btn btn-delete" style="height:30px; padding:0 10px;" onclick="askDel(${r[8]})">X</button>
+                    </td>
+                </tr>`).join('');
+                
+            if(document.getElementById("entryBody").rows.length === 0) {
+                addRow();
+            }
+        } catch (e) { 
+            console.log("Offline context status"); 
+            if(document.getElementById("entryBody").rows.length === 0) addRow();
+        } finally {
+            hideLoader();
+        }
+    }
+
+    function askSubmitPassword() {
+        openModal("Confirm", "Enter password to sync data", [{text: "Submit", class: "btn-send", click: (p) => startSubmit(p)}, {text: "Cancel"}], true);
+    }
+
+    async function startSubmit(password) {
+        showLoader("Uploading Records to Cloud...");
+        const entries = [];
+        document.querySelectorAll('#entryBody tr').forEach(r => {
+            entries.push({
+                sheetRow: r.getAttribute('data-sheet-row') || null,
+                serial: r.querySelector('.sr-in').value,
+                rodNumber: r.querySelector('.rd-in').value,
+                cutting: r.querySelector('.s-a').value,
+                welding: r.querySelector('.s-b').value,
+                helper: r.querySelector('.s-c').value,
+                shift: r.querySelector('.s-shift').value,
+                remarks: r.querySelector('.remarks-in').value
+            });
+        });
+        
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify({ pass: password, source: pageSource, inspectionDate: document.getElementById('reportDate').value, entries: entries })
+            });
+            const status = await res.json();
+            if(status === "Success") {
+                location.reload();
+            } else {
+                hideLoader();
+                alert(status);
+            }
+        } catch (e) { 
+            hideLoader();
+            alert("Error connecting to sheet"); 
+        }
+    }
+
+    async function askDel(id) {
+        openModal("Delete?", "Enter password to delete row " + id, [{text: "Delete", class: "btn-delete", click: async (p) => {
+            showLoader("Deleting Record Row...");
+            try {
+                const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: 'delete', pass: p, source: pageSource, rowNum: id }) });
+                await fetchHistory();
+            } catch(e) {
+                alert("Error deleting record");
+            } finally {
+                hideLoader();
+            }
+        }}, {text: "Cancel"}], true);
+    }
+
+    function editRow(rowNum, date, sr, rod, a, b, c, shift, remarks) {
+        document.getElementById('reportDate').value = date;
+        document.getElementById('entryBody').innerHTML = "";
+        addRow({rowNum, sr, rod, a, b, c, shift, remarks});
+        window.scrollTo(0,0);
+    }
+
+    // New Filtered Download Processing Architecture
+    function downloadDataChoice() {
+        const scope = document.getElementById('downloadScope').value;
+        const targetDate = document.getElementById('reportDate').value; // yyyy-MM-dd
+        
+        let out = "Date,SR,Rod,(A) Inner,(B) Middle,(C) Outer,Shift,Remarks\n";
+        const sorted = JSON.parse(JSON.stringify(rawData)).reverse(); // Reset back to natural historical order
+        
+        let targetFileName = `${pageSource}_Full_Inspection_Log.csv`;
+        let recordCounter = 0;
+
+        sorted.forEach(r => {
+            const recordDate = r[0]; // Format matches yyyy-MM-dd
+            
+            if (scope === 'full' || (scope === 'selected' && recordDate === targetDate)) {
+                out += `${r[0]},${r[1]},${r[2]},${r[3]},${r[4]},${r[5]},${r[6]},${r[7] || ''}\n`;
+                recordCounter++;
+            }
+        });
+
+        if (scope === 'selected') {
+            if (recordCounter === 0) {
+                alert(`No data records found on date: ${targetDate}`);
+                return;
+            }
+            targetFileName = `${pageSource}_Log_${targetDate}.csv`;
+        }
+        
+        // Exporting file content structure
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), out], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = targetFileName;
+        a.click();
+    }
+
+    // Disable right-click for AdSense security
+document.addEventListener("contextmenu", function(e) { e.preventDefault(); });
+</script>
+</body>
+</html>
