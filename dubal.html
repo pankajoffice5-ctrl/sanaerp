@@ -322,7 +322,7 @@
         let out = "Date,SR,Rod ID,(A) Inner,(B) Middle,(C) Outer,TJF,Shift,Remarks\n";
         const sorted = JSON.parse(JSON.stringify(rawData)).reverse();
         
-        let targetFileName = `${pageSource}_Full_Inspection_Log.csv`;
+        let targetFileName = `${pageSource}_Full_Inspection_Log.xlsx`;
         let recordCounter = 0;
 
         sorted.forEach(r => {
