@@ -19,7 +19,7 @@
         * { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: var(--bg); padding: 10px 8px; margin: 0; color: var(--text-main); }
         
-        .nav-bar { max-width: 700px; margin: 0 auto 14px auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .nav-bar { max-width: 700px; margin: 0 auto 14px auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
         .nav-btn { height: 44px; background: var(--primary); color: white; text-decoration: none; font-weight: bold; font-size: 13px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: 0.15s; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
         .nav-btn:hover { background: var(--accent); }
         .nav-btn.active { background: var(--success); pointer-events: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.15); }
@@ -47,8 +47,8 @@
         input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.15); }
         .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-        th { background: var(--primary); color: white; padding: 8px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-        td { border-bottom: 1px solid #f1f5f9; padding: 10px 6px; text-align: center; font-size: 13px; vertical-align: middle; }
+        th { background: var(--primary); color: white; padding: 8px 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { border-bottom: 1px solid #f1f5f9; padding: 10px 4px; text-align: center; font-size: 13px; vertical-align: middle; }
         
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
         .modal-card { background: white; padding: 20px; border-radius: 20px; width: 88%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
@@ -115,7 +115,7 @@
 
         <div class="table-wrap">
             <table id="entryTable">
-                <thead><tr><th>SR</th><th>ROD IDS</th><th>(A)</th><th>(B)</th><th>(C)</th><th>(D)</th><th>SHIFT</th><th>REMARKS</th><th>DEL</th></tr></thead>
+                <thead><tr><th>SR</th><th>ROD IDS</th><th>(A)</th><th>(B)</th><th>(C)</th><th>(D)</th><th>TJF</th><th>SHIFT</th><th>REMARKS</th><th>DEL</th></tr></thead>
                 <tbody id="entryBody"></tbody>
             </table>
         </div>
@@ -125,7 +125,7 @@
         <header><h2>Live Records</h2></header>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>DATE</th><th>SR</th><th>ROD IDS</th><th>(A)</th><th>(B)</th><th>(C)</th><th>(D)</th><th>SHIFT</th><th>REMARKS</th><th>ACTION</th></tr></thead>
+                <thead><tr><th>DATE</th><th>SR</th><th>ROD IDS</th><th>(A)</th><th>(B)</th><th>(C)</th><th>(D)</th><th>TJF</th><th>SHIFT</th><th>REMARKS</th><th>ACTION</th></tr></thead>
                 <tbody id="historyBody"></tbody>
             </table>
         </div>
@@ -144,7 +144,7 @@
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyu67OJpHuBkVdG69OO25JYqBfqSVdGjGpT6q5pVPv_DiLMei5YGfgiX1g4mc19UMEA/exec";
     let rawData = [];
-    let pageSource = "Sheet4"; // Default context targeted backend sheet destination
+    let pageSource = "Sheet4";
 
     function showLoader(text = "Syncing Live Sheet Data...") {
         document.getElementById('loadingText').innerText = text;
@@ -160,7 +160,7 @@
         
         const activeNav = document.querySelector('.nav-btn.active');
         if (activeNav) {
-            pageSource = activeNav.innerText.trim().replace(/\s+/g, ''); // Convert "SHEET 4" to "Sheet4"
+            pageSource = activeNav.innerText.trim().replace(/\s+/g, '');
             document.getElementById('pageTitle').innerText = `${activeNav.innerText.trim()} - Rod Inspection Entry`;
         }
         
@@ -190,6 +190,7 @@
             <td data-label="(B)"><select class="s-b"><option ${!d || d.b=='N/A'?'selected':''}>N/A</option><option ${d?.b=='✔'?'selected':''}>✔</option></select></td>
             <td data-label="(C)"><select class="s-c"><option ${!d || d.c=='N/A'?'selected':''}>N/A</option><option ${d?.c=='✔'?'selected':''}>✔</option></select></td>
             <td data-label="(D)"><select class="s-d"><option ${!d || d.d=='N/A'?'selected':''}>N/A</option><option ${d?.d=='✔'?'selected':''}>✔</option></select></td>
+            <td data-label="TJF"><select class="s-tjf"><option ${!d || d.tjf=='N/A'?'selected':''}>N/A</option><option ${d?.tjf=='✔'?'selected':''}>✔</option></select></td>
             <td data-label="SHIFT"><select class="s-shift"><option ${d?.shift=='Day'?'selected':''}>Day</option><option ${d?.shift=='Night'?'selected':''}>Night</option></select></td>
             <td data-label="REMARKS"><input type="text" value="${d ? d.remarks : ''}" class="remarks-in" placeholder="Remarks"></td>
             <td data-label="DEL"><button class="btn btn-delete" style="height:34px; width:40px; margin:auto;" onclick="this.closest('tr').remove()">X</button></td>
@@ -227,22 +228,29 @@
             rawData = JSON.parse(JSON.stringify(data));
             
             const body = document.getElementById('historyBody');
-            body.innerHTML = data.reverse().map(r => `
+            body.innerHTML = data.reverse().map(r => {
+                // Safeguard against missing columns vs automatic database ID placement
+                const rowId = r[r.length - 1]; 
+                const remarksValue = (r.length > 10 && isNaN(r[9])) ? r[9] : (isNaN(r[8]) && r[8] !== 'Day' && r[8] !== 'Night' ? r[8] : '');
+
+                return `
                 <tr>
-                    <td data-label="DATE">${r[0]}</td>
-                    <td data-label="SR">${r[1]}</td>
-                    <td data-label="ROD IDS">${r[2]}</td>
-                    <td data-label="(A)">${r[3]}</td>
-                    <td data-label="(B)">${r[4]}</td>
-                    <td data-label="(C)">${r[5]}</td>
-                    <td data-label="(D)">${r[6]}</td>
-                    <td data-label="SHIFT">${r[7]}</td>
-                    <td data-label="REMARKS">${r[8] || ''}</td>
+                    <td data-label="DATE">${r[0] || ''}</td>
+                    <td data-label="SR">${r[1] || ''}</td>
+                    <td data-label="ROD IDS">${r[2] || ''}</td>
+                    <td data-label="(A)">${r[3] || ''}</td>
+                    <td data-label="(B)">${r[4] || ''}</td>
+                    <td data-label="(C)">${r[5] || ''}</td>
+                    <td data-label="(D)">${r[6] || ''}</td>
+                    <td data-label="TJF">${r[7] || ''}</td>
+                    <td data-label="SHIFT">${r[8] == 'Day' || r[8] == 'Night' ? r[8] : (r[7] == 'Day' || r[7] == 'Night' ? r[7] : '')}</td>
+                    <td data-label="REMARKS">${remarksValue}</td>
                     <td class="action-cell">
-                        <button class="action-btn" onclick="editRow(${r[9]},'${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[6]}','${r[7]}','${r[8]}')">Edit</button>
-                        <button class="btn btn-delete" style="height:30px; padding:0 10px;" onclick="askDel(${r[9]})">X</button>
+                        <button class="action-btn" onclick="editRow(${rowId},'${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[6]}','${r[7]}','${r[8]}','${remarksValue}')">Edit</button>
+                        <button class="btn btn-delete" style="height:30px; padding:0 10px;" onclick="askDel(${rowId})">X</button>
                     </td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
                 
             if(document.getElementById("entryBody").rows.length === 0) {
                 addRow();
@@ -255,8 +263,11 @@
         }
     }
 
-    function askSubmitPassword() {
-        openModal("Confirm", "Enter password to sync data", [{text: "Submit", class: "btn-send", click: (p) => startSubmit(p)}, {text: "Cancel"}], true);
+    function editRow(rowNum, date, sr, rod, a, b, c, d, tjf, shift, remarks) {
+        document.getElementById('reportDate').value = date;
+        document.getElementById('entryBody').innerHTML = "";
+        addRow({rowNum, sr, rod, a, b, c, d, tjf, shift, remarks});
+        window.scrollTo(0,0);
     }
 
     async function startSubmit(password) {
@@ -267,10 +278,11 @@
                 sheetRow: r.getAttribute('data-sheet-row') || null,
                 serial: r.querySelector('.sr-in').value,
                 rodNumber: r.querySelector('.rd-in').value,
-                a: r.querySelector('.s-a').value,
-                b: r.querySelector('.s-b').value,
-                c: r.querySelector('.s-c').value,
+                cutting: r.querySelector('.s-a').value,
+                welding: r.querySelector('.s-b').value,
+                helper: r.querySelector('.s-c').value,
                 d: r.querySelector('.s-d').value,
+                tjf: r.querySelector('.s-tjf').value,
                 shift: r.querySelector('.s-shift').value,
                 remarks: r.querySelector('.remarks-in').value
             });
@@ -294,6 +306,10 @@
         }
     }
 
+    function askSubmitPassword() {
+        openModal("Confirm", "Enter password to sync data", [{text: "Submit", class: "btn-send", click: (p) => startSubmit(p)}, {text: "Cancel"}], true);
+    }
+
     async function askDel(id) {
         openModal("Delete?", "Enter password to delete row " + id, [{text: "Delete", class: "btn-delete", click: async (p) => {
             showLoader("Deleting Record Row...");
@@ -308,18 +324,11 @@
         }}, {text: "Cancel"}], true);
     }
 
-    function editRow(rowNum, date, sr, rod, a, b, c, d, shift, remarks) {
-        document.getElementById('reportDate').value = date;
-        document.getElementById('entryBody').innerHTML = "";
-        addRow({rowNum, sr, rod, a, b, c, d, shift, remarks});
-        window.scrollTo(0,0);
-    }
-
     function downloadDataChoice() {
         const scope = document.getElementById('downloadScope').value;
         const targetDate = document.getElementById('reportDate').value;
         
-        let out = "Date,SR,Rod ID,(A),(B),(C),(D),Shift,Remarks\n";
+        let out = "Date,SR,Rod ID,(A),(B),(C),(D),TJF,Shift,Remarks\n";
         const sorted = JSON.parse(JSON.stringify(rawData)).reverse();
         
         let targetFileName = `${pageSource}_Full_Inspection_Log.csv`;
@@ -328,7 +337,8 @@
         sorted.forEach(r => {
             const recordDate = r[0];
             if (scope === 'full' || (scope === 'selected' && recordDate === targetDate)) {
-                out += `${r[0]},${r[1]},${r[2]},${r[3]},${r[4]},${r[5]},${r[6]},${r[7]},${r[8] || ''}\n`;
+                const remarksValue = (r.length > 10 && isNaN(r[9])) ? r[9] : (isNaN(r[8]) && r[8] !== 'Day' && r[8] !== 'Night' ? r[8] : '');
+                out += `${r[0]},${r[1]},${r[2]},${r[3]},${r[4]},${r[5]},${r[6]},${r[7]},${r[8]},${remarksValue}\n`;
                 recordCounter++;
             }
         });

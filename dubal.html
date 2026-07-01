@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rod Inspection System - DUBAL</title>
-        <style>
+    <style>
         :root { 
             --primary: #2c3e50; 
             --accent: #3498db; 
@@ -277,20 +277,25 @@
         });
         
         try {
+            // Force content-type plain to satisfy Apps Script CORS and pass action: 'submit'
             const res = await fetch(WEB_APP_URL, {
                 method: "POST",
-                body: JSON.stringify({ pass: password, source: pageSource, inspectionDate: document.getElementById('reportDate').value, entries: entries })
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: 'submit', pass: password, source: pageSource, inspectionDate: document.getElementById('reportDate').value, entries: entries })
             });
-            const status = await res.json();
-            if(status === "Success") {
+            
+            const status = await res.text();
+            const cleanStatus = status.replace(/["']/g, "").trim(); 
+            
+            if(cleanStatus === "Success") {
                 location.reload();
             } else {
                 hideLoader();
-                alert(status);
+                alert(cleanStatus || "Failed to update backend script.");
             }
         } catch (e) { 
             hideLoader();
-            alert("Error connecting to sheet"); 
+            alert("Error connecting to sheet: " + e.message); 
         }
     }
 
@@ -298,8 +303,20 @@
         openModal("Delete?", "Enter password to delete row " + id, [{text: "Delete", class: "btn-delete", click: async (p) => {
             showLoader("Deleting Record Row...");
             try {
-                const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: 'delete', pass: p, source: pageSource, rowNum: id }) });
-                await fetchHistory();
+                const res = await fetch(WEB_APP_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: 'delete', pass: p, source: pageSource, rowNum: id }) 
+                });
+                
+                const status = await res.text();
+                const cleanStatus = status.replace(/["']/g, "").trim();
+                
+                if (cleanStatus === "Success" || cleanStatus === "") {
+                    await fetchHistory();
+                } else {
+                    alert(cleanStatus);
+                }
             } catch(e) {
                 alert("Error deleting record");
             } finally {
@@ -322,7 +339,7 @@
         let out = "Date,SR,Rod ID,(A) Inner,(B) Middle,(C) Outer,TJF,Shift,Remarks\n";
         const sorted = JSON.parse(JSON.stringify(rawData)).reverse();
         
-        let targetFileName = `${pageSource}_Full_Inspection_Log.xls`;
+        let targetFileName = `${pageSource}_Full_Inspection_Log.csv`;
         let recordCounter = 0;
 
         sorted.forEach(r => {
