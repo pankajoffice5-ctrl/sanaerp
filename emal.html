@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rod Inspection System - EMAL</title>
-        <style>
+    <title>Rod Inspection System - DUBAL</title>
+    <style>
         :root { 
             --primary: #2c3e50; 
             --accent: #3498db; 
@@ -19,7 +19,7 @@
         * { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: var(--bg); padding: 10px 8px; margin: 0; color: var(--text-main); }
         
-        .nav-bar { max-width: 700px; margin: 0 auto 14px auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .nav-bar { max-width: 700px; margin: 0 auto 14px auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
         .nav-btn { height: 44px; background: var(--primary); color: white; text-decoration: none; font-weight: bold; font-size: 13px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: 0.15s; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
         .nav-btn:hover { background: var(--accent); }
         .nav-btn.active { background: var(--success); pointer-events: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.15); }
@@ -85,9 +85,9 @@
 
 <nav class="nav-bar">
     <a href="dubal.html" class="nav-btn">DUBAL</a>
-    <a href="dubal ex.html" class="nav-btn">DUBAL EX MAX</a>   
+    <a href="dubal ex.html" class="nav-btn">DUBAL EX MAX</a>
     <a href="emal.html" class="nav-btn active">EMAL</a>
-     <a href="emal ex.html" class="nav-btn">EMAL EX MAX</a>     
+    <a href="emal ex.html" class="nav-btn">EMAL EX MAX</a>    
     <a href="ryad.html" class="nav-btn">RYAD</a>
 </nav>
 
@@ -110,6 +110,17 @@
             </div>
             <button class="btn btn-download" onclick="downloadDataChoice()">Download</button>
             
+            <div class="download-box" style="grid-column: span 2;">
+                <label>ENGINEER NAME</label>
+                <select id="engineerName">
+                    <option value="" disabled selected>-- Choose Engineer --</option>
+                    <option value="Veeramani">Veeramani</option>
+                    <option value="shafi">shafi</option>
+                    <option value="Harish">Harish</option>
+                    <option value="jamshed">jamshed</option>
+                </select>
+            </div>
+            
             <button class="btn btn-send" onclick="askSubmitPassword()">Verify & Submit</button>
         </div>
 
@@ -125,7 +136,7 @@
         <header><h2>Live Records</h2></header>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>DATE</th><th>SR</th><th>ROD IDS</th><th>(A) Inner</th><th>(B) Middle</th><th>(C) Outer</th><th>TJF</th><th>SHIFT</th><th>REMARKS</th><th>ACTION</th></tr></thead>
+                <thead><tr><th>DATE</th><th>SR</th><th>ROD IDS</th><th>(A) Inner</th><th>(B) Middle</th><th>(C) Outer</th><th>TJF</th><th>SHIFT</th><th>ENGINEER</th><th>REMARKS</th><th>ACTION</th></tr></thead>
                 <tbody id="historyBody"></tbody>
             </table>
         </div>
@@ -227,22 +238,27 @@
             rawData = JSON.parse(JSON.stringify(data));
             
             const body = document.getElementById('historyBody');
-            body.innerHTML = data.reverse().map(r => `
+            body.innerHTML = data.reverse().map(r => {
+                const dbRowId = r[r.length - 1];
+                // FIXED: Adjusted indices to explicitly skip r[6] (the EX MAX placeholder column)
+                return `
                 <tr>
-                    <td data-label="DATE">${r[0]}</td>
-                    <td data-label="SR">${r[1]}</td>
-                    <td data-label="ROD IDS">${r[2]}</td>
-                    <td data-label="(A) Inner">${r[3]}</td>
-                    <td data-label="(B) Middle">${r[4]}</td>
-                    <td data-label="(C) Outer">${r[5]}</td>
-                    <td data-label="TJF">${r[6]}</td>
-                    <td data-label="SHIFT">${r[7]}</td>
-                    <td data-label="REMARKS">${r[8] || ''}</td>
+                    <td data-label="DATE">${r[0] || ''}</td>
+                    <td data-label="SR">${r[1] || ''}</td>
+                    <td data-label="ROD IDS">${r[2] || ''}</td>
+                    <td data-label="(A) Inner">${r[3] || ''}</td>
+                    <td data-label="(B) Middle">${r[4] || ''}</td>
+                    <td data-label="(C) Outer">${r[5] || ''}</td>
+                    <td data-label="TJF">${r[7] || ''}</td>
+                    <td data-label="SHIFT">${r[8] || ''}</td>
+                    <td data-label="ENGINEER">${r[9] || ''}</td>
+                    <td data-label="REMARKS">${r[10] || ''}</td>
                     <td class="action-cell">
-                        <button class="action-btn" onclick="editRow(${r[9]},'${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[6]}','${r[7]}','${r[8]}')">Edit</button>
-                        <button class="btn btn-delete" style="height:30px; padding:0 10px;" onclick="askDel(${r[9]})">X</button>
+                        <button class="action-btn" onclick="editRow(${dbRowId},'${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[7]}','${r[8]}','${r[9]}','${r[10]}')">Edit</button>
+                        <button class="btn btn-delete" style="height:30px; padding:0 10px;" onclick="askDel(${dbRowId})">X</button>
                     </td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
                 
             if(document.getElementById("entryBody").rows.length === 0) {
                 addRow();
@@ -256,12 +272,19 @@
     }
 
     function askSubmitPassword() {
+        const nameSelect = document.getElementById('engineerName');
+        if(!nameSelect.value) {
+            alert("Please choose an Engineer Name before submitting data logs.");
+            return;
+        }
         openModal("Confirm", "Enter password to sync data", [{text: "Submit", class: "btn-send", click: (p) => startSubmit(p)}, {text: "Cancel"}], true);
     }
 
     async function startSubmit(password) {
         showLoader("Uploading Records to Cloud...");
         const entries = [];
+        const engName = document.getElementById('engineerName').value;
+
         document.querySelectorAll('#entryBody tr').forEach(r => {
             entries.push({
                 sheetRow: r.getAttribute('data-sheet-row') || null,
@@ -272,6 +295,7 @@
                 helper: r.querySelector('.s-c').value,
                 tjf: r.querySelector('.s-tjf').value,
                 shift: r.querySelector('.s-shift').value,
+                engineer: engName, 
                 remarks: r.querySelector('.remarks-in').value
             });
         });
@@ -279,18 +303,22 @@
         try {
             const res = await fetch(WEB_APP_URL, {
                 method: "POST",
-                body: JSON.stringify({ pass: password, source: pageSource, inspectionDate: document.getElementById('reportDate').value, entries: entries })
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: 'submit', pass: password, source: pageSource, inspectionDate: document.getElementById('reportDate').value, entries: entries })
             });
-            const status = await res.json();
-            if(status === "Success") {
+            
+            const status = await res.text();
+            const cleanStatus = status.replace(/["']/g, "").trim(); 
+            
+            if(cleanStatus === "Success") {
                 location.reload();
             } else {
                 hideLoader();
-                alert(status);
+                alert(cleanStatus || "Failed to update backend script.");
             }
         } catch (e) { 
             hideLoader();
-            alert("Error connecting to sheet"); 
+            alert("Error connecting to sheet: " + e.message); 
         }
     }
 
@@ -298,8 +326,20 @@
         openModal("Delete?", "Enter password to delete row " + id, [{text: "Delete", class: "btn-delete", click: async (p) => {
             showLoader("Deleting Record Row...");
             try {
-                const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: 'delete', pass: p, source: pageSource, rowNum: id }) });
-                await fetchHistory();
+                const res = await fetch(WEB_APP_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: 'delete', pass: p, source: pageSource, rowNum: id }) 
+                });
+                
+                const status = await res.text();
+                const cleanStatus = status.replace(/["']/g, "").trim();
+                
+                if (cleanStatus === "Success" || cleanStatus === "") {
+                    await fetchHistory();
+                } else {
+                    alert(cleanStatus);
+                }
             } catch(e) {
                 alert("Error deleting record");
             } finally {
@@ -308,8 +348,9 @@
         }}, {text: "Cancel"}], true);
     }
 
-    function editRow(rowNum, date, sr, rod, a, b, c, tjf, shift, remarks) {
+    function editRow(rowNum, date, sr, rod, a, b, c, tjf, shift, engineer, remarks) {
         document.getElementById('reportDate').value = date;
+        document.getElementById('engineerName').value = engineer;
         document.getElementById('entryBody').innerHTML = "";
         addRow({rowNum, sr, rod, a, b, c, tjf, shift, remarks});
         window.scrollTo(0,0);
@@ -319,7 +360,7 @@
         const scope = document.getElementById('downloadScope').value;
         const targetDate = document.getElementById('reportDate').value;
         
-        let out = "Date,SR,Rod ID,(A) Inner,(B) Middle,(C) Outer,TJF,Shift,Remarks\n";
+        let out = "Date,SR,Rod ID,(A) Inner,(B) Middle,(C) Outer,TJF,Shift,Engineer,Remarks\n";
         const sorted = JSON.parse(JSON.stringify(rawData)).reverse();
         
         let targetFileName = `${pageSource}_Full_Inspection_Log.csv`;
@@ -328,7 +369,8 @@
         sorted.forEach(r => {
             const recordDate = r[0];
             if (scope === 'full' || (scope === 'selected' && recordDate === targetDate)) {
-                out += `${r[0]},${r[1]},${r[2]},${r[3]},${r[4]},${r[5]},${r[6]},${r[7]},${r[8] || ''}\n`;
+                // FIXED: Adjusted download mapping variables to correctly follow the backend tracking structure
+                out += `${r[0]},${r[1]},${r[2]},${r[3]},${r[4]},${r[5]},${r[7]},${r[8]},${r[9] || ''},${r[10] || ''}\n`;
                 recordCounter++;
             }
         });

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rod Inspection System - ex</title>
+    <title>Rod Inspection System</title>
     <style>
         :root { 
             --primary: #2c3e50; 
@@ -32,17 +32,17 @@
         
         .toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 14px; }
         .date-box { grid-column: span 2; }
-        .date-box label { font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        .date-box label, .engineer-box label, .download-box label { font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 4px; }
         .download-box { display: flex; flex-direction: column; gap: 4px; }
-        .download-box label { font-size: 11px; font-weight: bold; color: var(--text-muted); display: block; }
-        .download-box select { height: 46px; }
+        .engineer-box { grid-column: span 2; display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
 
         .btn { height: 46px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; transition: 0.15s; font-size: 13px; }
         .btn:active { transform: scale(0.98); }
-        .btn-add { background: var(--success); align-self: flex-end; height: 46px; margin-top: 15px; }
-        .btn-send { background: var(--send); grid-column: span 2; font-size: 14px; height: 48px; }
-        .btn-download { background: var(--primary); align-self: flex-end; height: 46px; }
+        .btn-add { background: var(--success); height: 46px; }
+        .btn-download { background: var(--primary); height: 46px; }
+        .btn-send { background: var(--send); grid-column: span 2; font-size: 14px; height: 48px; margin-top: 4px; }
         .btn-delete { background: var(--danger); font-size: 12px; }
+        
         input, select { width: 100%; height: 44px; padding: 8px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; outline: none; background: #fff; }
         input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.15); }
         .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -70,7 +70,6 @@
             input, select { width: 58%; height: 36px; font-size: 12px; padding: 6px 8px; }
             .action-cell { width: 100% !important; justify-content: space-between; }
             .action-btn, .btn-delete { width: 48% !important; height: 34px !important; margin: 0 !important; }
-            .btn-add { margin-top: 0; }
         }
         .action-cell { display: flex; gap: 6px; justify-content: center; align-items: center; }
         .action-btn { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
@@ -99,7 +98,11 @@
                 <label>INSPECTION DATE</label>
                 <input type="date" id="reportDate">
             </div>
-            <button class="btn btn-add" onclick="addRow()">+ Add Rod</button>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn btn-add" onclick="addRow()">+ Add Rod</button>
+                <button class="btn btn-download" onclick="downloadDataChoice()">Download</button>
+            </div>
             
             <div class="download-box">
                 <label>EXCEL DOWNLOAD RANGE</label>
@@ -108,14 +111,37 @@
                     <option value="full">Full Complete Log</option>
                 </select>
             </div>
-            <button class="btn btn-download" onclick="downloadDataChoice()">Download</button>
+            
+            <div class="engineer-box">
+                <label>ENGINEER NAME</label>
+                <select id="globalEngineer">
+                    <option value="">-- Choose Engineer --</option>
+                    <option value="Veeramani">Veeramani</option>
+                    <option value="shafi">shafi</option>
+                    <option value="Harish">Harish</option>
+                    <option value="jamshed">jamshed</option>
+                </select>
+            </div>
             
             <button class="btn btn-send" onclick="askSubmitPassword()">Verify & Submit</button>
         </div>
 
         <div class="table-wrap">
             <table id="entryTable">
-                <thead><tr><th>SR</th><th>ROD IDS</th><th>(A)</th><th>(B)</th><th>(C)</th><th>(D)</th><th>TJF</th><th>SHIFT</th><th>REMARKS</th><th>DEL</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>SR</th>
+                        <th>ROD IDS</th>
+                        <th>(A)</th>
+                        <th>(B)</th>
+                        <th>(C)</th>
+                        <th>(D)</th>
+                        <th>TJF</th>
+                        <th>SHIFT</th>
+                        <th>REMARKS</th>
+                        <th>DEL</th>
+                    </tr>
+                </thead>
                 <tbody id="entryBody"></tbody>
             </table>
         </div>
@@ -125,7 +151,22 @@
         <header><h2>Live Records</h2></header>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>DATE</th><th>SR</th><th>ROD IDS</th><th>(A)</th><th>(B)</th><th>(C)</th><th>(D)</th><th>TJF</th><th>SHIFT</th><th>REMARKS</th><th>ACTION</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>DATE</th>
+                        <th>SR</th>
+                        <th>ROD IDS</th>
+                        <th>(A)</th>
+                        <th>(B)</th>
+                        <th>(C)</th>
+                        <th>(D)</th>
+                        <th>TJF</th>
+                        <th>SHIFT</th>
+                        <th>ENGINEER</th>
+                        <th>REMARKS</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
                 <tbody id="historyBody"></tbody>
             </table>
         </div>
@@ -196,6 +237,10 @@
             <td data-label="DEL"><button class="btn btn-delete" style="height:34px; width:40px; margin:auto;" onclick="this.closest('tr').remove()">X</button></td>
         `;
         body.appendChild(tr);
+
+        if (d && d.engineer) {
+            document.getElementById('globalEngineer').value = d.engineer;
+        }
     }
 
     function openModal(title, msg, buttons = [], isPassword = false) {
@@ -229,24 +274,32 @@
             
             const body = document.getElementById('historyBody');
             body.innerHTML = data.reverse().map(r => {
-                // Safeguard against missing columns vs automatic database ID placement
                 const rowId = r[r.length - 1]; 
-                const remarksValue = (r.length > 10 && isNaN(r[9])) ? r[9] : (isNaN(r[8]) && r[8] !== 'Day' && r[8] !== 'Night' ? r[8] : '');
+                
+                let aValue = r[3] || '';
+                let bValue = r[4] || '';
+                let cValue = r[5] || '';
+                let dValue = r[6] || '';
+                let tjfValue = r[7] || '';
+                let shiftValue = r[8] || '';
+                let engineerValue = r[9] || '';
+                let remarksValue = r[10] || '';
 
                 return `
                 <tr>
                     <td data-label="DATE">${r[0] || ''}</td>
                     <td data-label="SR">${r[1] || ''}</td>
                     <td data-label="ROD IDS">${r[2] || ''}</td>
-                    <td data-label="(A)">${r[3] || ''}</td>
-                    <td data-label="(B)">${r[4] || ''}</td>
-                    <td data-label="(C)">${r[5] || ''}</td>
-                    <td data-label="(D)">${r[6] || ''}</td>
-                    <td data-label="TJF">${r[7] || ''}</td>
-                    <td data-label="SHIFT">${r[8] == 'Day' || r[8] == 'Night' ? r[8] : (r[7] == 'Day' || r[7] == 'Night' ? r[7] : '')}</td>
+                    <td data-label="(A)">${aValue}</td>
+                    <td data-label="(B)">${bValue}</td>
+                    <td data-label="(C)">${cValue}</td>
+                    <td data-label="(D)">${dValue}</td>
+                    <td data-label="TJF">${tjfValue}</td>
+                    <td data-label="SHIFT">${shiftValue}</td>
+                    <td data-label="ENGINEER">${engineerValue}</td>
                     <td data-label="REMARKS">${remarksValue}</td>
                     <td class="action-cell">
-                        <button class="action-btn" onclick="editRow(${rowId},'${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}','${r[6]}','${r[7]}','${r[8]}','${remarksValue}')">Edit</button>
+                        <button class="action-btn" onclick="editRow(${rowId},'${r[0]}','${r[1]}','${r[2]}','${aValue}','${bValue}','${cValue}','${dValue}','${tjfValue}','${shiftValue}','${engineerValue}','${remarksValue}')">Edit</button>
                         <button class="btn btn-delete" style="height:30px; padding:0 10px;" onclick="askDel(${rowId})">X</button>
                     </td>
                 </tr>`;
@@ -263,14 +316,20 @@
         }
     }
 
-    function editRow(rowNum, date, sr, rod, a, b, c, d, tjf, shift, remarks) {
+    function editRow(rowNum, date, sr, rod, a, b, c, d, tjf, shift, engineer, remarks) {
         document.getElementById('reportDate').value = date;
         document.getElementById('entryBody').innerHTML = "";
-        addRow({rowNum, sr, rod, a, b, c, d, tjf, shift, remarks});
+        addRow({rowNum, sr, rod, a, b, c, d, tjf, shift, engineer, remarks});
         window.scrollTo(0,0);
     }
 
     async function startSubmit(password) {
+        const engName = document.getElementById('globalEngineer').value;
+        if(!engName){
+            alert("Please choose an Engineer Name before submitting.");
+            return;
+        }
+
         showLoader("Uploading Records to Cloud...");
         const entries = [];
         document.querySelectorAll('#entryBody tr').forEach(r => {
@@ -284,6 +343,7 @@
                 d: r.querySelector('.s-d').value,
                 tjf: r.querySelector('.s-tjf').value,
                 shift: r.querySelector('.s-shift').value,
+                engineer: engName,
                 remarks: r.querySelector('.remarks-in').value
             });
         });
@@ -307,6 +367,10 @@
     }
 
     function askSubmitPassword() {
+        if(!document.getElementById('globalEngineer').value){
+            alert("Please choose an Engineer Name before submitting.");
+            return;
+        }
         openModal("Confirm", "Enter password to sync data", [{text: "Submit", class: "btn-send", click: (p) => startSubmit(p)}, {text: "Cancel"}], true);
     }
 
@@ -328,7 +392,7 @@
         const scope = document.getElementById('downloadScope').value;
         const targetDate = document.getElementById('reportDate').value;
         
-        let out = "Date,SR,Rod ID,(A),(B),(C),(D),TJF,Shift,Remarks\n";
+        let out = "Date,SR,Rod ID,(A),(B),(C),(D),TJF,Shift,Engineer,Remarks\n";
         const sorted = JSON.parse(JSON.stringify(rawData)).reverse();
         
         let targetFileName = `${pageSource}_Full_Inspection_Log.csv`;
@@ -337,8 +401,16 @@
         sorted.forEach(r => {
             const recordDate = r[0];
             if (scope === 'full' || (scope === 'selected' && recordDate === targetDate)) {
-                const remarksValue = (r.length > 10 && isNaN(r[9])) ? r[9] : (isNaN(r[8]) && r[8] !== 'Day' && r[8] !== 'Night' ? r[8] : '');
-                out += `${r[0]},${r[1]},${r[2]},${r[3]},${r[4]},${r[5]},${r[6]},${r[7]},${r[8]},${remarksValue}\n`;
+                let aValue = r[3] || '';
+                let bValue = r[4] || '';
+                let cValue = r[5] || '';
+                let dValue = r[6] || '';
+                let tjfValue = r[7] || '';
+                let shiftValue = r[8] || '';
+                let engineerValue = r[9] || '';
+                let remarksValue = r[10] || '';
+                
+                out += `${r[0]},${r[1]},${r[2]},${aValue},${bValue},${cValue},${dValue},${tjfValue},${shiftValue},${engineerValue},${remarksValue}\n`;
                 recordCounter++;
             }
         });
