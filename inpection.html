@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SteelInspect Pro - Offline Quality Inspection System</title>
+    <meta name="theme-color" content="#0d6efd">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --transition-speed: 0.25s;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        body.dark-mode {
+            background-color: #121212 !important;
+            color: #e0e0e0 !important;
+        }
+
+        #sidebar {
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .content-area {
+            margin-top: 0px;
+            padding-bottom: 40px;
+        }
+
+        @media (min-width: 768px) {
+            .content-area {
+                margin-left: 25%;
+            }
+        }
+        @media (min-width: 992px) {
+            .content-area {
+                margin-left: 16.666667%;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .content-area {
+                margin-top: 56px;
+                padding-bottom: 80px;
+            }
+        }
+
+        body.dark-mode .custom-card, 
+        body.dark-mode .card,
+        body.dark-mode .table-responsive,
+        body.dark-mode .mobile-bottom-bar,
+        body.dark-mode .list-group-item {
+            background-color: #1e1e1e !important;
+            color: #e0e0e0 !important;
+            border-color: #2d2d2d !important;
+        }
+
+        body.dark-mode input,
+        body.dark-mode select,
+        body.dark-mode textarea {
+            background-color: #2d2d2d !important;
+            color: #ffffff !important;
+            border-color: #404040 !important;
+        }
+
+        body.dark-mode input:focus,
+        body.dark-mode select:focus,
+        body.dark-mode textarea:focus {
+            background-color: #333333 !important;
+            color: #ffffff !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .custom-card {
+            border-radius: 12px !important;
+            box-shadow: var(--card-shadow);
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            cursor: pointer;
+        }
+
+        .max-vh-85 { max-height: 85vh; }
+        .max-width-md { max-width: 650px; }
+        .max-width-sm { max-width: 450px; }
+        .x-small { font-size: 0.7rem; }
+
+        .btn-check-group .btn {
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 6px 12px;
+        }
+
+        .signature-canvas-wrapper canvas {
+            border: 2px dashed #cccccc !important;
+            cursor: crosshair;
+        }
+    </style>
+</head>
+<body class="light-mode">
+
+    <nav class="navbar navbar-dark bg-primary d-md-none fixed-top shadow-sm px-3">
+        <span class="navbar-brand mb-0 h1 d-flex align-items-center">
+            <i class="bi bi-shield-check me-2"></i> SteelInspect Pro
+        </span>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-none d-md-block bg-dark sidebar position-fixed vh-100 p-0 text-white shadow">
+                <div class="p-3 bg-primary text-center">
+                    <h5 class="m-0 font-monospace fw-bold"><i class="bi bi-shield-check"></i> SteelInspect Pro</h5>
+                    <small class="text-white-50">Offline Quality System</small>
+                </div>
+                <div class="list-group list-group-flush mt-3 px-2">
+                    <button class="list-group-item list-group-item-action text-white bg-transparent border-0 rounded p-3 active nav-link-btn" data-target="dashboard-view"><i class="bi bi-speedometer2 me-3"></i> Dashboard</button>
+                    <button class="list-group-item list-group-item-action text-white bg-transparent border-0 rounded p-3 nav-link-btn" data-target="new-inspection-view"><i class="bi bi-plus-circle me-3"></i> New Inspection</button>
+                    <button class="list-group-item list-group-item-action text-white bg-transparent border-0 rounded p-3 nav-link-btn" data-target="history-view"><i class="bi bi-folder-symlink me-3"></i> Report History</button>
+                    <button class="list-group-item list-group-item-action text-white bg-transparent border-0 rounded p-3 nav-link-btn" data-target="settings-view"><i class="bi bi-gear me-3"></i> Settings</button>
+                    <button class="list-group-item list-group-item-action text-white bg-transparent border-0 rounded p-3 nav-link-btn" data-target="about-view"><i class="bi bi-info-circle me-3"></i> About</button>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content-area">
+                
+                <section id="dashboard-view" class="view-section py-4">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2 text-primary fw-semibold">Dashboard Summary</h1>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-lg-3">
+                            <div class="card border-0 bg-primary text-white p-3 shadow-sm rounded-3">
+                                <h6>Total Reports</h6>
+                                <h2 id="kpi-total" class="fw-bold mb-0">0</h2>
+                            </div>
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <div class="card border-0 bg-success text-white p-3 shadow-sm rounded-3">
+                                <h6>Passed Status</h6>
+                                <h2 id="kpi-pass" class="fw-bold mb-0">0</h2>
+                            </div>
+                        </div>
+                        <div class="col-6 col-lg-2">
+                            <div class="card border-0 bg-danger text-white p-3 shadow-sm rounded-3">
+                                <h6>Failed Status</h6>
+                                <h2 id="kpi-fail" class="fw-bold mb-0">0</h2>
+                            </div>
+                        </div>
+                        <div class="col-6 col-lg-2">
+                            <div class="card border-0 bg-warning text-dark p-3 shadow-sm rounded-3">
+                                <h6>Hold</h6>
+                                <h2 id="kpi-hold" class="fw-bold mb-0">0</h2>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="card border-0 bg-secondary text-white p-3 shadow-sm rounded-3">
+                                <h6>Rework Req.</h6>
+                                <h2 id="kpi-rework" class="fw-bold mb-0">0</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm rounded-3 custom-card action-card p-4 text-center btn-trigger" data-target="new-inspection-view">
+                                <i class="bi bi-file-earmark-medical text-primary display-4 mb-3"></i>
+                                <h4>New Inspection</h4>
+                                <p class="text-muted">Initiate a structural steel verification report locally offline.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm rounded-3 custom-card action-card p-4 text-center btn-trigger" data-target="history-view">
+                                <i class="bi bi-archive-fill text-info display-4 mb-3"></i>
+                                <h4>Report History</h4>
+                                <p class="text-muted">Review, duplicate, modify or export generated inspection files.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="new-inspection-view" class="view-section py-4 d-none">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2 text-primary fw-semibold">Quality Inspection Wizard</h1>
+                        <button type="button" class="btn btn-outline-danger" id="btn-reset-form"><i class="bi bi-trash"></i> Reset Form</button>
+                    </div>
+
+                    <form id="inspection-form" novalidate>
+                        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4 custom-card">
+                            <h5 class="mb-3 text-primary border-bottom pb-2"><i class="bi bi-building"></i> Project Information</h5>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Report Number</label>
+                                    <input type="text" class="form-control bg-light fw-bold text-secondary" id="inp-report-num">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Company Name</label>
+                                    <input type="text" class="form-control" id="inp-company-name" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Company Logo</label>
+                                    <input type="file" class="form-control" id="inp-company-logo" accept="image/*">
+                                    <input type="hidden" id="inp-logo-base64">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Project Name</label>
+                                    <input type="text" class="form-control" id="inp-project-name" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Client Name</label>
+                                    <input type="text" class="form-control" id="inp-client-name">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Consultant</label>
+                                    <input type="text" class="form-control" id="inp-consultant">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Contractor</label>
+                                    <input type="text" class="form-control" id="inp-contractor">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Site Location</label>
+                                    <input type="text" class="form-control" id="inp-location">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Drawing Number</label>
+                                    <input type="text" class="form-control" id="inp-drawing-num">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Revision</label>
+                                    <input type="text" class="form-control" id="inp-revision">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Inspection Date</label>
+                                    <input type="date" class="form-control" id="inp-date" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Inspector Name</label>
+                                    <input type="text" class="form-control" id="inp-inspector" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Weather</label>
+                                    <input type="text" class="form-control" id="inp-weather" placeholder="e.g. Sunny, 28°C">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Structure Type</label>
+                                    <input type="text" class="form-control" id="inp-structure-type">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Overall Structural/Report Status</label>
+                                    <select class="form-select" id="inp-overall-status">
+                                        <option value="PASS" class="text-success fw-bold">PASS</option>
+                                        <option value="FAIL" class="text-danger fw-bold">FAIL</option>
+                                        <option value="HOLD" class="text-warning fw-bold">HOLD</option>
+                                        <option value="REWORK" class="text-secondary fw-bold">REWORK REQUIRED</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4 custom-card">
+                            <h5 class="mb-3 text-primary border-bottom pb-2"><i class="bi bi-list-check"></i> Inspection Evaluation Checklist</h5>
+                            <div id="checklist-wrapper"></div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4 custom-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                <h5 class="m-0 text-primary"><i class="bi bi-ruler"></i> Measurement Dimensional Control Data Table</h5>
+                                <button type="button" class="btn btn-sm btn-primary" id="btn-add-measurement-row"><i class="bi bi-plus"></i> Add Measurement Record</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered align-middle" id="table-measurements">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Member Mark</th>
+                                            <th>Description / Parameter</th>
+                                            <th>Required Dim.</th>
+                                            <th>Actual Dim.</th>
+                                            <th>Tolerance Range</th>
+                                            <th>Status</th>
+                                            <th>Remarks</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="measurement-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4 custom-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                <h5 class="m-0 text-primary"><i class="bi bi-camera"></i> Photographic Site Evidence Log</h5>
+                                <button type="button" class="btn btn-sm btn-primary" id="btn-add-photo-slot"><i class="bi bi-camera-fill"></i> Add Photo Evidence</button>
+                            </div>
+                            <div class="row g-3" id="photo-deck-container"></div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4 custom-card">
+                            <h5 class="mb-3 text-primary border-bottom pb-2"><i class="bi bi-pencil-square"></i> Engineering Remarks & Action Statements</h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Observations</label>
+                                    <textarea class="form-control" rows="3" id="inp-observation" placeholder="Detail any real-time discrepancies or site notes..."></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Recommendations</label>
+                                    <textarea class="form-control" rows="3" id="inp-recommendation" placeholder="Suggested engineering actions or protective corrections..."></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Corrective Actions Required</label>
+                                    <textarea class="form-control" rows="3" id="inp-corrective-action" placeholder="Mandatory technical criteria or modifications..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-3 p-4 mb-4 custom-card">
+                            <h5 class="mb-3 text-primary border-bottom pb-2"><i class="bi bi-vector-pen"></i> Quality Compliance Endorsements (Signatures)</h5>
+                            <div class="row g-4">
+                                <div class="col-md-6 text-center">
+                                    <label class="form-label fw-bold d-block">Quality Assurance/Control Inspector Signature</label>
+                                    <div class="signature-canvas-wrapper mb-2">
+                                        <canvas id="canvas-inspector-sig" width="400" height="150" class="border rounded bg-white w-100"></canvas>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearSignature('canvas-inspector-sig')">Clear Canvas</button>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <label class="form-label fw-bold d-block">Authorized Client/Consultant Witness Representative</label>
+                                    <div class="signature-canvas-wrapper mb-2">
+                                        <canvas id="canvas-client-sig" width="400" height="150" class="border rounded bg-white w-100"></canvas>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearSignature('canvas-client-sig')">Clear Canvas</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="gap-3 mb-5 d-grid d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-lg btn-success px-4" id="btn-save-inspection"><i class="bi bi-hdd-fill"></i> Commit & Save Report</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section id="history-view" class="view-section py-4 d-none">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2 text-primary fw-semibold">Local Inspection Logs</h1>
+                    </div>
+                    <div class="card border-0 shadow-sm rounded-3 p-3 mb-4 bg-light">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" id="search-project" placeholder="Filter project name...">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" class="form-control" id="search-drawing" placeholder="Filter drawing...">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" id="search-client" placeholder="Filter client...">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" class="form-control" id="search-inspector" placeholder="Filter inspector...">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="date" class="form-control" id="search-date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive bg-white rounded shadow-sm">
+                        <table class="table table-hover align-middle mb-0" id="table-history">
+                            <thead class="table-primary text-white">
+                                <tr>
+                                    <th>Report No.</th>
+                                    <th>Project / Client Name</th>
+                                    <th>Date</th>
+                                    <th>Inspector</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Interactive Options</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-tbody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="settings-view" class="view-section py-4 d-none">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2 text-primary fw-semibold">System Settings</h1>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 custom-card">
+                                <h5 class="mb-3 text-primary"><i class="bi bi-sliders"></i> Default Configuration Defaults</h5>
+                                <div class="mb-3">
+                                    <label class="form-label">Global Company Name Default</label>
+                                    <input type="text" class="form-control" id="cfg-company-name">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Global Default Lead Inspector</label>
+                                    <input type="text" class="form-control" id="cfg-default-inspector">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Dynamic Prefix Token for Serial Coding</label>
+                                    <input type="text" class="form-control" id="cfg-report-prefix" value="QA-2026-">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label d-block">Application Display Theme Interface</label>
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="theme-toggle" id="theme-light" checked autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="theme-light"><i class="bi bi-sun-fill"></i> Industrial Light</label>
+                                        <input type="radio" class="btn-check" name="theme-toggle" id="theme-dark" autocomplete="off">
+                                        <label class="btn btn-outline-primary" for="theme-dark"><i class="bi bi-moon-stars-fill"></i> High-Contrast Dark</label>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary w-100 mt-2" id="btn-save-settings"><i class="bi bi-save"></i> Save System Parameters</button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 custom-card">
+                                <h5 class="mb-3 text-primary"><i class="bi bi-database-fill-gear"></i> Standalone Data Backup Recovery Module</h5>
+                                <p class="text-muted sm">Export entire IndexedDB tables down onto local JSON files to secure migration parameters safely.</p>
+                                <div class="d-grid gap-3">
+                                    <button class="btn btn-outline-success text-start" id="btn-export-db"><i class="bi bi-download me-2"></i> Export Structural DB Volume (.json)</button>
+                                    <div class="border p-3 rounded bg-light position-relative">
+                                        <label class="form-label fw-semibold small d-block">Restore Database Ledger File</label>
+                                        <input type="file" class="form-control form-control-sm" id="btn-import-db-file" accept=".json">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="about-view" class="view-section py-4 d-none">
+                    <div class="card border-0 shadow-sm rounded-3 p-5 text-center my-5 max-width-md mx-auto custom-card">
+                        <i class="bi bi-shield-lock-fill text-primary display-1 mb-3"></i>
+                        <h2 class="fw-bold">Steel Inspection Genrater </h2>
+                        <p class="text-muted mb-4">Offline Quality Inspection Engineering System for Metal Structures</p>
+                        <hr class="w-25 mx-auto">
+                        <div class="row g-2 text-start max-width-sm mx-auto mt-4">
+                            <div class="col-5 text-muted fw-semibold">Software Build:</div>
+                            <div class="col-7">v1.0 Premium Professional</div>
+                            <div class="col-5 text-muted fw-semibold">Target Environment:</div>
+                            <div class="col-7">Offline Client Sandbox Architecture</div>
+                            <div class="col-5 text-muted fw-semibold">Core Kernel Framework:</div>
+                            <div class="col-7">HTML5 / IndexedDB / ES6 Standards</div>
+                            <div class="col-5 text-muted fw-semibold">License Scope:</div>
+                            <div class="col-7">Al Sana Engg End-User Local Sandbox</div>
+                        </div>
+                        <p class="mt-5 text-muted small">© 2026 Al Sana Engg. & Turning, Shj UAE.</p>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <nav class="navbar fixed-bottom navbar-light bg-white border-top d-md-none p-0 mobile-bottom-bar shadow-lg">
+        <div class="w-100 d-flex justify-content-around text-center">
+            <button class="btn bg-transparent border-0 py-2 nav-link-btn active text-primary" data-target="dashboard-view">
+                <i class="bi bi-speedometer2 d-block h5 mb-0"></i><small class="x-small">Dash</small>
+            </button>
+            <button class="btn bg-transparent border-0 py-2 nav-link-btn text-muted" data-target="new-inspection-view">
+                <i class="bi bi-plus-circle d-block h5 mb-0"></i><small class="x-small">Inspect</small>
+            </button>
+            <button class="btn bg-transparent border-0 py-2 nav-link-btn text-muted" data-target="history-view">
+                <i class="bi bi-folder-symlink d-block h5 mb-0"></i><small class="x-small">Logs</small>
+            </button>
+            <button class="btn bg-transparent border-0 py-2 nav-link-btn text-muted" data-target="settings-view">
+                <i class="bi bi-gear d-block h5 mb-0"></i><small class="x-small">Setup</small>
+            </button>
+        </div>
+    </nav>
+
+    <div id="pdf-render-sandbox" class="position-absolute bg-white text-dark p-4 d-none" style="width: 794px; min-height: 1123px; top:0; left:0; z-index:-9999; font-size:12px;"></div>
+
+    <div class="modal fade" id="modal-photo-viewer" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content border-0 bg-transparent text-center">
+                <div class="position-absolute top-0 end-0 p-3" style="z-index: 1060;">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <img src="" id="modal-view-target-img" class="img-fluid rounded shadow-lg max-vh-85" alt="Evidence View">
+                    <h5 id="modal-view-target-caption" class="text-white mt-3 fw-light"></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3 mb-5 mb-md-3" style="z-index: 1055;">
+        <div id="sys-toast" class="toast align-items-center border-0 text-white" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center" id="sys-toast-msg"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sys-spinner-overlay" class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex flex-column align-items-center justify-content-center d-none" style="z-index: 9999;">
+        <div class="spinner-border text-primary mb-3" style="width: 3.5rem; height: 3.5rem;" role="status"></div>
+        <h5 class="text-white fw-bold mb-1" id="spinner-title">Compiling Layout Elements</h5>
+        <div class="progress w-25 mt-2" style="height: 6px;">
+            <div id="spinner-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        /* ==========================================================================
+           STORAGE ENGINE (IndexedDB Subsystem)
+           ========================================================================== */
+        const DB_NAME = 'SteelInspectProDB';
+        const DB_VERSION = 1;
+        let dbInstance = null;
+
+        function initDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('reports')) db.createObjectStore('reports', { keyPath: 'id' });
+                    if (!db.objectStoreNames.contains('settings')) db.createObjectStore('settings', { keyPath: 'key' });
+                };
+                request.onsuccess = (event) => { dbInstance = event.target.result; resolve(dbInstance); };
+                request.onerror = (event) => reject(event.target.error);
+            });
+        }
+
+        function writeRecord(storeName, data) {
+            return new Promise((resolve, reject) => {
+                const tx = dbInstance.transaction(storeName, 'readwrite');
+                tx.objectStore(storeName).put(data).onsuccess = () => resolve(true);
+            });
+        }
+
+        function readRecord(storeName, key) {
+            return new Promise((resolve, reject) => {
+                const tx = dbInstance.transaction(storeName, 'readonly');
+                tx.objectStore(storeName).get(key).onsuccess = (e) => resolve(e.target.result);
+            });
+        }
+
+        function readAllRecords(storeName) {
+            return new Promise((resolve, reject) => {
+                const tx = dbInstance.transaction(storeName, 'readonly');
+                tx.objectStore(storeName).getAll().onsuccess = (e) => resolve(e.target.result || []);
+            });
+        }
+
+        function deleteRecord(storeName, key) {
+            return new Promise((resolve, reject) => {
+                const tx = dbInstance.transaction(storeName, 'readwrite');
+                tx.objectStore(storeName).delete(key).onsuccess = () => resolve(true);
+            });
+        }
+
+        /* ==========================================================================
+           DASHBOARD CONTROLLER
+           ========================================================================== */
+        async function calculateMetricsDashboard() {
+            try {
+                const allReports = await readAllRecords('reports');
+                let totals = { total: allReports.length, pass: 0, fail: 0, hold: 0, rework: 0 };
+                allReports.forEach(report => {
+                    const status = (report.projectInfo.overallStatus || 'PASS').toUpperCase();
+                    if (status === 'PASS') totals.pass++;
+                    else if (status === 'FAIL') totals.fail++;
+                    else if (status === 'HOLD') totals.hold++;
+                    else if (status === 'REWORK' || status === 'REWORK REQUIRED') totals.rework++;
+                });
+                document.getElementById('kpi-total').innerText = totals.total;
+                document.getElementById('kpi-pass').innerText = totals.pass;
+                document.getElementById('kpi-fail').innerText = totals.fail;
+                document.getElementById('kpi-hold').innerText = totals.hold;
+                document.getElementById('kpi-rework').innerText = totals.rework;
+            } catch (err) { console.error(err); }
+        }
+
+        /* ==========================================================================
+           INSPECTION FORM ENGINE & METADATA
+           ========================================================================== */
+        const CHECKLIST_METADATA = {
+            "Material Inspection": ["Material Traceability Certificates Checked", "Heat Number Stamped & Tracked", "Thickness & Grade Verification Done"],
+            "Fabrication Inspection": ["Cutting & Fit-up Tolerance Checks", "Bevel Angle Profiling Verified", "Root Gap Dimensions Approved"],
+            "Welding Inspection": ["WPS Qualified Selection Matches Parameters", "Visual NDT Slag/Porosity Free Inspection", "Preheating Target Degrees Maintained"],
+            "Painting Inspection": ["Surface Blast Profile Texture Verified", "Dry Film Thickness (DFT) Dry Checking", "Adhesion Cross-Hatch Compliance Approved"],
+            "Galvanizing Inspection": ["Zinc Layer Coating Uniformity Checked", "Dross and Run Marks Extracted Cleanly", "Embrittlement Testing Completed"],
+            "Bolt Inspection": ["High Strength Structural Preloading Applied", "Torque Wrench Calibration Records Current", "Thread Engagement Levels Cleared"],
+            "Installation Inspection": ["Plumb Line Orientation Anchored", "Foundation Level Baseplate Spacing Level", "Anchor Bolt Position & Tension Verified"],
+            "Final Inspection": ["Dimension Layout Punch-List Verification", "Marking Tags Matching Structural Matrix", "Final Architectural Acceptance Form Completed"]
+        };
+
+        function renderInspectionChecklist() {
+            const wrapper = document.getElementById('checklist-wrapper');
+            wrapper.innerHTML = '';
+            Object.entries(CHECKLIST_METADATA).forEach(([sectionTitle, checkpoints], sIdx) => {
+                let sectionCard = document.createElement('div');
+                sectionCard.className = 'card border-0 bg-light p-3 mb-3 border-start border-primary border-4 rounded-2';
+                let header = `<h6 class="fw-bold text-dark mb-3"><i class="bi bi-chevron-down me-2"></i> ${sectionTitle}</h6><div class="row g-2">`;
+                checkpoints.forEach((item, cIdx) => {
+                    const fieldId = `chk-${sIdx}-${cIdx}`;
+                    header += `
+                        <div class="col-12 border-bottom pb-2 mb-2">
+                            <div class="row align-items-center g-2">
+                                <div class="col-md-6"><span class="small fw-semibold text-secondary">${item}</span></div>
+                                <div class="col-md-3">
+                                    <div class="btn-group btn-check-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="status-${fieldId}" id="${fieldId}-pass" value="PASS" checked>
+                                        <label class="btn btn-sm btn-outline-success" for="${fieldId}-pass">PASS</label>
+                                        <input type="radio" class="btn-check" name="status-${fieldId}" id="${fieldId}-fail" value="FAIL">
+                                        <label class="btn btn-sm btn-outline-danger" for="${fieldId}-fail">FAIL</label>
+                                        <input type="radio" class="btn-check" name="status-${fieldId}" id="${fieldId}-na" value="N/A">
+                                        <label class="btn btn-sm btn-outline-secondary" for="${fieldId}-na">N/A</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3"><input type="text" class="form-control form-control-sm" placeholder="Notes..." id="comm-${fieldId}"></div>
+                            </div>
+                        </div>`;
+                });
+                header += `</div>`;
+                sectionCard.innerHTML = header;
+                wrapper.appendChild(sectionCard);
+            });
+        }
+
+        function injectMeasurementRow(data = null) {
+            const tbody = document.getElementById('measurement-tbody');
+            const rowId = 'row-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4);
+            const tr = document.createElement('tr');
+            tr.id = rowId;
+            tr.innerHTML = `
+                <td><input type="text" class="form-control form-control-sm m-mark" value="${data?.mark || ''}" required></td>
+                <td><input type="text" class="form-control form-control-sm m-desc" value="${data?.desc || ''}"></td>
+                <td><input type="text" class="form-control form-control-sm m-req" value="${data?.req || ''}"></td>
+                <td><input type="text" class="form-control form-control-sm m-act" value="${data?.act || ''}"></td>
+                <td><input type="text" class="form-control form-control-sm m-tol" value="${data?.tol || ''}"></td>
+                <td>
+                    <select class="form-select form-select-sm m-status">
+                        <option value="PASS" ${data?.status==='PASS'?'selected':''}>PASS</option>
+                        <option value="FAIL" ${data?.status==='FAIL'?'selected':''}>FAIL</option>
+                    </select>
+                </td>
+                <td><input type="text" class="form-control form-control-sm m-rem" value="${data?.rem || ''}"></td>
+                <td class="text-center"><button type="button" class="btn btn-sm btn-danger" onclick="document.getElementById('${rowId}').remove()"><i class="bi bi-trash"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function injectPhotoSlot(data = null) {
+            const container = document.getElementById('photo-deck-container');
+            const slotId = 'photo-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4);
+            const col = document.createElement('div');
+            col.className = 'col-md-4 col-sm-6';
+            col.id = slotId;
+            col.innerHTML = `
+                <div class="card h-100 border p-2 text-center bg-white">
+                    <div class="mb-2 border rounded bg-light d-flex align-items-center justify-content-center overflow-hidden" style="height:150px;">
+                        <img src="${data?.src || ''}" class="img-preview w-100 h-100 object-fit-cover ${data?.src ? '':'d-none'}" onclick="triggerFullscreenInspector(this.src, this.closest('.card').querySelector('.img-caption').value)">
+                        <i class="bi bi-image text-muted display-6 icon-placeholder ${data?.src ? 'd-none':''}"></i>
+                    </div>
+                    <input type="file" class="form-control form-control-sm mb-2 file-input" accept="image/*" onchange="processLocalPhotoUpload(this)">
+                    <input type="text" class="form-control form-control-sm mb-2 img-caption" placeholder="Caption" value="${data?.caption || ''}">
+                    <div class="d-flex gap-1 justify-content-center">
+                        <button type="button" class="btn btn-xs btn-outline-danger w-100" onclick="document.getElementById('${slotId}').remove()"><i class="bi bi-trash"></i> Drop</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(col);
+        }
+
+        function processLocalPhotoUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const card = input.closest('.card');
+                card.querySelector('.img-preview').src = e.target.result;
+                card.querySelector('.img-preview').classList.remove('d-none');
+                card.querySelector('.icon-placeholder').classList.add('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function triggerFullscreenInspector(src, caption) {
+            if(!src) return;
+            document.getElementById('modal-view-target-img').src = src;
+            document.getElementById('modal-view-target-caption').innerText = caption || 'Structural evidence capture.';
+            new bootstrap.Modal(document.getElementById('modal-photo-viewer')).show();
+        }
+
+        async function compileAutoReportNumber() {
+            const records = await readAllRecords('reports');
+            const settings = await readRecord('settings', 'config');
+            const prefix = settings?.reportPrefix || "QA-2026-";
+            document.getElementById('inp-report-num').value = `${prefix}${String(records.length + 1).padStart(4, '0')}`;
+        }
+
+        /* ==========================================================================
+           SIGNATURE ENGRAVER SUBSYSTEM
+           ========================================================================== */
+        let signatureTrackers = {};
+
+        function initSignatureCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let dynamicDrawing = false;
+            
+            signatureTrackers[canvasId] = { clear: () => ctx.clearRect(0, 0, canvas.width, canvas.height), canvas, ctx };
+
+            function fetchCoords(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: (clientX - rect.left) * (canvas.width / rect.width), y: (clientY - rect.top) * (canvas.height / rect.height) };
+            }
+
+            function begin(e) { dynamicDrawing = true; const c = fetchCoords(e); ctx.beginPath(); ctx.moveTo(c.x, c.y); e.preventDefault(); }
+            function stroke(e) { if (!dynamicDrawing) return; const c = fetchCoords(e); ctx.lineTo(c.x, c.y); ctx.lineWidth = 2.5; ctx.strokeStyle = '#000000'; ctx.lineCap = 'round'; ctx.stroke(); e.preventDefault(); }
+            
+            canvas.addEventListener('mousedown', begin); canvas.addEventListener('mousemove', stroke); window.addEventListener('mouseup', () => dynamicDrawing = false);
+            canvas.addEventListener('touchstart', begin, { passive: false }); canvas.addEventListener('touchmove', stroke, { passive: false }); window.addEventListener('touchend', () => dynamicDrawing = false);
+        }
+
+        function clearSignature(canvasId) { if (signatureTrackers[canvasId]) signatureTrackers[canvasId].clear(); }
+        function extractSignatureBase64(canvasId) {
+            const rec = signatureTrackers[canvasId]; if (!rec) return '';
+            const blank = document.createElement('canvas'); blank.width = rec.canvas.width; blank.height = rec.canvas.height;
+            return rec.canvas.toDataURL() === blank.toDataURL() ? '' : rec.canvas.toDataURL();
+        }
+        function loadSignatureBase64(canvasId, dataUrl) {
+            const rec = signatureTrackers[canvasId]; if (!rec || !dataUrl) return;
+            const img = new Image(); img.onload = () => { rec.clear(); rec.ctx.drawImage(img, 0, 0); }; img.src = dataUrl;
+        }
+
+        /* ==========================================================================
+           A4 MULTIPAGE PDF ENGINE (jsPDF + html2canvas Layer Injection)
+           ========================================================================== */
+        async function generateInspectionPDF(reportId, immediateShare = false) {
+            showSystemSpinner('Compiling PDF Elements', 10);
+            const data = await readRecord('reports', reportId);
+            if(!data) { hideSystemSpinner(); triggerSystemNotification('Report missing', 'danger'); return; }
+
+            const sandbox = document.getElementById('pdf-render-sandbox');
+            sandbox.classList.remove('d-none');
+            
+            let chkHtml = '';
+            Object.entries(data.checklist).forEach(([sec, items]) => {
+                chkHtml += `<tr><td colspan="3" style="background:#f1f1f1; font-weight:bold;">${sec}</td></tr>`;
+                Object.entries(items).forEach(([item, val]) => {
+                    let c = val.status === 'PASS' ? 'color:green;' : (val.status === 'FAIL' ? 'color:red;' : 'color:gray;');
+                    chkHtml += `<tr><td style="padding:6px; border:1px solid #ddd;">${item}</td><td style="padding:6px; border:1px solid #ddd; font-weight:bold; ${c}">${val.status}</td><td style="padding:6px; border:1px solid #ddd; font-size:11px;">${val.comment || ''}</td></tr>`;
+                });
+            });
+
+            let measHtml = '';
+            data.measurements.forEach(m => {
+                measHtml += `<tr><td style="padding:6px; border:1px solid #ddd;">${m.mark}</td><td style="padding:6px; border:1px solid #ddd;">${m.desc}</td><td style="padding:6px; border:1px solid #ddd;">${m.req}</td><td style="padding:6px; border:1px solid #ddd;">${m.act}</td><td style="padding:6px; border:1px solid #ddd;">${m.tol}</td><td style="padding:6px; border:1px solid #ddd; font-weight:bold; color:${m.status==='PASS'?'green':'red'}">${m.status}</td><td style="padding:6px; border:1px solid #ddd;">${m.rem}</td></tr>`;
+            });
+
+            let picHtml = '';
+            if(data.photos?.length > 0) {
+                picHtml += `<h3 style="color:#0d6efd; border-bottom:2px solid #0d6efd; padding-bottom:4px; margin-top:30px;">Photographic Evidence</h3><div style="display:flex; flex-wrap:wrap; gap:15px;">`;
+                data.photos.forEach(p => {
+                    picHtml += `<div style="width:230px; border:1px solid #ccc; padding:6px; background:#fafafa; text-align:center;"><img src="${p.src}" style="width:100%; height:150px; object-fit:cover; display:block; margin-bottom:5px;"><div style="font-size:11px; font-weight:bold;">${p.caption || 'Evidence'}</div></div>`;
+                });
+                picHtml += `</div>`;
+            }
+
+            sandbox.innerHTML = `
+                <div style="padding:20px; font-family:Arial,sans-serif; color:#111;">
+                    <div style="margin-bottom:20px; border-bottom:3px solid #0d6efd; padding-bottom:15px;">
+                        ${data.projectInfo.logo ? `<img src="${data.projectInfo.logo}" style="max-height:55px; max-width:180px; float:right;">`:''}
+                        <h1 style="margin:0; color:#0d6efd; font-size:24px;">${data.projectInfo.companyName}</h1>
+                        <p style="margin:2px 0 0 0; font-size:14px; text-transform:uppercase; color:#555;">Quality Inspection Engineering Report</p>
+                    </div>
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:12px;">
+                        <tr><td><strong>Report No:</strong> ${data.id}</td><td><strong>Date:</strong> ${data.projectInfo.date}</td></tr>
+                        <tr><td><strong>Project Name:</strong> ${data.projectInfo.projectName}</td><td><strong>Inspector:</strong> ${data.projectInfo.inspector}</td></tr>
+                        <tr><td><strong>Client Name:</strong> ${data.projectInfo.clientName || 'N/A'}</td><td><strong>Location:</strong> ${data.projectInfo.location || 'N/A'}</td></tr>
+                        <tr><td><strong>Drawing Number:</strong> ${data.projectInfo.drawingNum || 'N/A'}</td><td><strong>Overall Status:</strong> ${data.projectInfo.overallStatus}</td></tr>
+                    </table>
+                    <h3 style="color:#0d6efd; border-bottom:2px solid #0d6efd; font-size:14px; text-transform:uppercase;">Compliance Checklist</h3>
+                    <table style="width:100%; border-collapse:collapse; font-size:11px; margin-bottom:20px;">
+                        <thead><tr style="background:#0d6efd; color:white;"><th style="padding:6px;">Parameter</th><th style="padding:6px;">Status</th><th style="padding:6px;">Observations</th></tr></thead>
+                        <tbody>${chkHtml}</tbody>
+                    </table>
+                    <h3 style="color:#0d6efd; border-bottom:2px solid #0d6efd; font-size:14px; text-transform:uppercase;">Dimensional Control</h3>
+                    <table style="width:100%; border-collapse:collapse; font-size:11px; margin-bottom:20px;">
+                        <thead><tr style="background:#0d6efd; color:white;"><th style="padding:6px;">Mark</th><th style="padding:6px;">Description</th><th style="padding:6px;">Req</th><th style="padding:6px;">Act</th><th style="padding:6px;">Tol</th><th style="padding:6px;">Status</th><th style="padding:6px;">Remarks</th></tr></thead>
+                        <tbody>${measHtml}</tbody>
+                    </table>
+                    <h3 style="color:#0d6efd; border-bottom:2px solid #0d6efd; font-size:14px; text-transform:uppercase;">Engineering Remarks</h3>
+                    <div style="background:#f9f9f9; border:1px solid #ddd; padding:10px; font-size:12px; margin-bottom:20px;">
+                        <p><strong>Observations:</strong> ${data.remarks.observation || 'None'}</p>
+                        <p><strong>Recommendations:</strong> ${data.remarks.recommendation || 'None'}</p>
+                        <p><strong>Corrective Actions:</strong> ${data.remarks.correctiveAction || 'None'}</p>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:12px;">
+                        <div style="width:45%; text-align:center;">
+                            <p style="font-weight:bold;">Inspector Signature</p>
+                            <div style="border-bottom:1px solid #999; height:50px;">${data.signatures.inspector ? `<img src="${data.signatures.inspector}" style="max-height:45px;">`:''}</div>
+                        </div>
+                        <div style="width:45%; text-align:center;">
+                            <p style="font-weight:bold;">Witness Representative</p>
+                            <div style="border-bottom:1px solid #999; height:50px;">${data.signatures.client ? `<img src="${data.signatures.client}" style="max-height:45px;">`:''}</div>
+                        </div>
+                    </div>
+                    ${picHtml}
+                </div>`;
+
+            updateSystemSpinnerProgress(40);
+            setTimeout(async () => {
+                try {
+                    const canvas = await html2canvas(sandbox, { scale: 2, useCORS: true });
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                    const imgW = 210, pageH = 297, imgH = (canvas.height * imgW) / canvas.width;
+                    let hLeft = imgH, pos = 0;
+
+                    updateSystemSpinnerProgress(80);
+                    pdf.addImage(imgData, 'JPEG', 0, pos, imgW, imgH);
+                    hLeft -= pageH;
+                    while (hLeft >= 0) { pos = hLeft - imgH; pdf.addPage(); pdf.addImage(imgData, 'JPEG', 0, pos, imgW, imgH); hLeft -= pageH; }
+
+                    sandbox.classList.add('d-none'); sandbox.innerHTML = ''; hideSystemSpinner();
+
+                    if (immediateShare) {
+                        const blob = pdf.output('blob');
+                        const file = new File([blob], `${reportId}.pdf`, { type: 'application/pdf' });
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            await navigator.share({ files: [file], title: `Report ${reportId}` });
+                        } else {
+                            triggerSystemNotification("Fallback download activated.", "warning"); pdf.save(`${reportId}.pdf`);
+                        }
+                    } else { pdf.save(`${reportId}.pdf`); triggerSystemNotification("PDF Saved Successfully", "success"); }
+                } catch (e) { console.error(e); hideSystemSpinner(); sandbox.classList.add('d-none'); }
+            }, 600);
+        }
+
+        /* ==========================================================================
+           HISTORY SYSTEM LEDGER TRANSFORMS
+           ========================================================================== */
+        async function loadHistoryLogsTable() {
+            try {
+                const records = await readAllRecords('reports');
+                const fProj = document.getElementById('search-project').value.toLowerCase();
+                const fDraw = document.getElementById('search-drawing').value.toLowerCase();
+                const fClient = document.getElementById('search-client').value.toLowerCase();
+                const fInsp = document.getElementById('search-inspector').value.toLowerCase();
+                const fDate = document.getElementById('search-date').value;
+
+                const tbody = document.getElementById('history-tbody'); tbody.innerHTML = '';
+                const filtered = records.filter(r => {
+                    if (fProj && !r.projectInfo.projectName.toLowerCase().includes(fProj)) return false;
+                    if (fDraw && !r.projectInfo.drawingNum.toLowerCase().includes(fDraw)) return false;
+                    if (fClient && !r.projectInfo.clientName.toLowerCase().includes(fClient)) return false;
+                    if (fInsp && !r.projectInfo.inspector.toLowerCase().includes(fInsp)) return false;
+                    if (fDate && r.projectInfo.date !== fDate) return false;
+                    return true;
+                });
+
+                if(filtered.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No compliant metrics found.</td></tr>`; return;
+                }
+
+                filtered.reverse().forEach(r => {
+                    let b = r.projectInfo.overallStatus === 'FAIL' ? 'bg-danger' : (r.projectInfo.overallStatus==='HOLD'?'bg-warning text-dark':'bg-success');
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="fw-bold">${r.id}</td>
+                        <td><div>${r.projectInfo.projectName}</div><small class="text-muted">${r.projectInfo.clientName || 'N/A'}</small></td>
+                        <td>${r.projectInfo.date}</td>
+                        <td>${r.projectInfo.inspector}</td>
+                        <td><span class="badge ${b}">${r.projectInfo.overallStatus}</span></td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" onclick="generateInspectionPDF('${r.id}', false)"><i class="bi bi-file-earmark-pdf"></i></button>
+                                <button class="btn btn-outline-success" onclick="generateInspectionPDF('${r.id}', true)"><i class="bi bi-whatsapp"></i></button>
+                                <button class="btn btn-outline-info" onclick="duplicateReport('${r.id}')"><i class="bi bi-copy"></i></button>
+                                <button class="btn btn-outline-dark" onclick="reloadReportToForm('${r.id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-outline-danger" onclick="triggerDelete('${r.id}')"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </td>`;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        async function triggerDelete(id) {
+            if(confirm('Delete permanently?')) { await deleteRecord('reports', id); loadHistoryLogsTable(); calculateMetricsDashboard(); }
+        }
+
+        async function duplicateReport(id) {
+            const rec = await readRecord('reports', id); if(!rec) return;
+            await compileAutoReportNumber();
+            rec.id = document.getElementById('inp-report-num').value;
+            rec.projectInfo.date = new Date().toISOString().split('T')[0];
+            await writeRecord('reports', rec); loadHistoryLogsTable(); calculateMetricsDashboard();
+        }
+
+        async function reloadReportToForm(id) {
+            const r = await readRecord('reports', id); if(!r) return;
+            document.getElementById('inp-report-num').value = r.id;
+            document.getElementById('inp-company-name').value = r.projectInfo.companyName;
+            document.getElementById('inp-logo-base64').value = r.projectInfo.logo;
+            document.getElementById('inp-project-name').value = r.projectInfo.projectName;
+            document.getElementById('inp-client-name').value = r.projectInfo.clientName;
+            document.getElementById('inp-consultant').value = r.projectInfo.consultant;
+            document.getElementById('inp-contractor').value = r.projectInfo.contractor;
+            document.getElementById('inp-location').value = r.projectInfo.location;
+            document.getElementById('inp-drawing-num').value = r.projectInfo.drawingNum;
+            document.getElementById('inp-revision').value = r.projectInfo.revision;
+            document.getElementById('inp-date').value = r.projectInfo.date;
+            document.getElementById('inp-inspector').value = r.projectInfo.inspector;
+            document.getElementById('inp-weather').value = r.projectInfo.weather;
+            document.getElementById('inp-structure-type').value = r.projectInfo.structureType;
+            document.getElementById('inp-overall-status').value = r.projectInfo.overallStatus;
+
+            renderInspectionChecklist();
+            Object.entries(r.checklist).forEach(([sec, items], sIdx) => {
+                Object.entries(items).forEach(([item, val], cIdx) => {
+                    const fieldId = `chk-${sIdx}-${cIdx}`;
+                    const opt = document.getElementById(`${fieldId}-${val.status.toLowerCase().replace('/', '')}`);
+                    if(opt) opt.checked = true;
+                    if(document.getElementById(`comm-${fieldId}`)) document.getElementById(`comm-${fieldId}`).value = val.comment || '';
+                });
+            });
+
+            document.getElementById('measurement-tbody').innerHTML = ''; r.measurements.forEach(m => injectMeasurementRow(m));
+            document.getElementById('photo-deck-container').innerHTML = ''; r.photos.forEach(p => injectPhotoSlot(p));
+
+            document.getElementById('inp-observation').value = r.remarks.observation;
+            document.getElementById('inp-recommendation').value = r.remarks.recommendation;
+            document.getElementById('inp-corrective-action').value = r.remarks.correctiveAction;
+
+            loadSignatureBase64('canvas-inspector-sig', r.signatures.inspector);
+            loadSignatureBase64('canvas-client-sig', r.signatures.client);
+            switchActiveAppView('new-inspection-view');
+        }
+
+        /* ==========================================================================
+           GLOBAL SETTINGS MANAGEMENT SYSTEM
+           ========================================================================== */
+        async function loadDefaultGlobalSettings() {
+            const settings = await readRecord('settings', 'config');
+            if (settings) {
+                document.getElementById('cfg-company-name').value = settings.companyName || '';
+                document.getElementById('cfg-default-inspector').value = settings.defaultInspector || '';
+                document.getElementById('cfg-report-prefix').value = settings.reportPrefix || 'QA-2026-';
+                if (settings.theme === 'dark') {
+                    document.getElementById('theme-dark').checked = true; document.body.classList.replace('light-mode', 'dark-mode');
+                }
+            }
+            if(settings) {
+                if(!document.getElementById('inp-company-name').value) document.getElementById('inp-company-name').value = settings.companyName || '';
+                if(!document.getElementById('inp-inspector').value) document.getElementById('inp-inspector').value = settings.defaultInspector || '';
+            }
+        }
+
+        document.getElementById('btn-save-settings').addEventListener('click', async () => {
+            const t = document.getElementById('theme-dark').checked ? 'dark' : 'light';
+            await writeRecord('settings', {
+                key: 'config',
+                companyName: document.getElementById('cfg-company-name').value,
+                defaultInspector: document.getElementById('cfg-default-inspector').value,
+                reportPrefix: document.getElementById('cfg-report-prefix').value,
+                theme: t
+            });
+            document.body.className = t === 'dark' ? 'dark-mode' : 'light-mode';
+            triggerSystemNotification('Configuration cached.', 'success'); compileAutoReportNumber();
+        });
+
+        document.getElementById('btn-export-db').addEventListener('click', async () => {
+            const backup = { reports: await readAllRecords('reports'), settings: await readAllRecords('settings') };
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' }));
+            a.download = `SteelInspectPro_Backup.json`; a.click();
+        });
+
+        document.getElementById('btn-import-db-file').addEventListener('change', function(e) {
+            const f = e.target.files[0]; if(!f) return;
+            const r = new FileReader(); r.onload = async function(evt) {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    if(data.reports) for(let record of data.reports) await writeRecord('reports', record);
+                    if(data.settings) for(let record of data.settings) await writeRecord('settings', record);
+                    triggerSystemNotification('Database infrastructure imported.', 'success');
+                    calculateMetricsDashboard(); loadHistoryLogsTable(); loadDefaultGlobalSettings();
+                } catch { triggerSystemNotification('Import schema error.', 'danger'); }
+            };
+            r.readAsText(f);
+        });
+
+        /* ==========================================================================
+           ORCHESTRATION PIPELINE LOGIC (App Lifecycle Coordinator)
+           ========================================================================== */
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initDatabase(); renderInspectionChecklist(); injectMeasurementRow(); injectPhotoSlot();
+            initSignatureCanvas('canvas-inspector-sig'); initSignatureCanvas('canvas-client-sig');
+            await loadDefaultGlobalSettings(); await calculateMetricsDashboard(); await loadHistoryLogsTable(); await compileAutoReportNumber();
+            
+            document.getElementById('inp-date').value = new Date().toISOString().split('T')[0];
+
+            document.querySelectorAll('.nav-link-btn, .btn-trigger').forEach(b => {
+                b.addEventListener('click', () => {
+                    switchActiveAppView(b.getAttribute('data-target') || b.closest('.btn-trigger').getAttribute('data-target'));
+                });
+            });
+
+            ['search-project', 'search-drawing', 'search-client', 'search-inspector', 'search-date'].forEach(id => {
+                document.getElementById(id).addEventListener('input', loadHistoryLogsTable);
+            });
+
+            document.getElementById('inp-company-logo').addEventListener('change', function() {
+                const f = this.files[0]; if(f) {
+                    const r = new FileReader(); r.onload = (e) => { document.getElementById('inp-logo-base64').value = e.target.result; }; r.readAsDataURL(f);
+                }
+            });
+
+            document.getElementById('btn-reset-form').addEventListener('click', () => { if(confirm("Discard entries?")) resetInspectionWorkspace(); });
+            document.getElementById('btn-add-measurement-row').addEventListener('click', () => injectMeasurementRow());
+            document.getElementById('btn-add-photo-slot').addEventListener('click', () => injectPhotoSlot());
+
+            document.getElementById('btn-save-inspection').addEventListener('click', async () => {
+                const rNum = document.getElementById('inp-report-num').value;
+                const pName = document.getElementById('inp-project-name').value;
+                const cName = document.getElementById('inp-company-name').value;
+                if(!pName || !cName) { triggerSystemNotification("Project & Company identity fields are mandatory.", "danger"); return; }
+
+                showSystemSpinner('Writing elements...', 50);
+                let chkData = {};
+                Object.entries(CHECKLIST_METADATA).forEach(([sec, pts], sIdx) => {
+                    chkData[sec] = {};
+                    pts.forEach((pt, cIdx) => {
+                        const fid = `chk-${sIdx}-${cIdx}`;
+                        chkData[sec][pt] = { status: document.querySelector(`input[name="status-${fid}"]:checked`)?.value || 'PASS', comment: document.getElementById(`comm-${fid}`)?.value || '' };
+                    });
+                });
+
+                let measData = [];
+                document.querySelectorAll('#measurement-tbody tr').forEach(row => {
+                    const mk = row.querySelector('.m-mark').value;
+                    if(mk) measData.push({ mark: mk, desc: row.querySelector('.m-desc').value, req: row.querySelector('.m-req').value, act: row.querySelector('.m-act').value, tol: row.querySelector('.m-tol').value, status: row.querySelector('.m-status').value, rem: row.querySelector('.m-rem').value });
+                });
+
+                let photoData = [];
+                document.querySelectorAll('#photo-deck-container .card').forEach(c => {
+                    const img = c.querySelector('.img-preview');
+                    if(img && !img.classList.contains('d-none')) photoData.push({ src: img.src, caption: c.querySelector('.img-caption').value });
+                });
+
+                await writeRecord('reports', {
+                    id: rNum,
+                    projectInfo: {
+                        companyName: cName, logo: document.getElementById('inp-logo-base64').value, projectName: pName,
+                        clientName: document.getElementById('inp-client-name').value, consultant: document.getElementById('inp-consultant').value, contractor: document.getElementById('inp-contractor').value,
+                        location: document.getElementById('inp-location').value, drawingNum: document.getElementById('inp-drawing-num').value, revision: document.getElementById('inp-revision').value,
+                        date: document.getElementById('inp-date').value, inspector: document.getElementById('inp-inspector').value, weather: document.getElementById('inp-weather').value,
+                        structureType: document.getElementById('inp-structure-type').value, overallStatus: document.getElementById('inp-overall-status').value
+                    },
+                    checklist: chkData, measurements: measData, photos: photoData,
+                    remarks: { observation: document.getElementById('inp-observation').value, recommendation: document.getElementById('inp-recommendation').value, correctiveAction: document.getElementById('inp-corrective-action').value },
+                    signatures: { inspector: extractSignatureBase64('canvas-inspector-sig'), client: extractSignatureBase64('canvas-client-sig') }
+                });
+
+                hideSystemSpinner(); triggerSystemNotification('Inspection structural record saved.', 'success');
+                await calculateMetricsDashboard(); await loadHistoryLogsTable(); resetInspectionWorkspace(); switchActiveAppView('dashboard-view');
+            });
+        });
+
+        function switchActiveAppView(targetId) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.add('d-none'));
+            const dest = document.getElementById(targetId); if(dest) dest.classList.remove('d-none');
+            document.querySelectorAll('.nav-link-btn').forEach(b => {
+                if(b.getAttribute('data-target') === targetId) { b.classList.add('active', 'text-primary'); b.classList.remove('text-muted'); }
+                else { b.classList.remove('active', 'text-primary'); if(!b.closest('#sidebar')) b.classList.add('text-muted'); }
+            });
+        }
+
+        function resetInspectionWorkspace() {
+            document.getElementById('inspection-form').reset(); document.getElementById('inp-logo-base64').value = '';
+            renderInspectionChecklist(); document.getElementById('measurement-tbody').innerHTML = ''; document.getElementById('photo-deck-container').innerHTML = '';
+            injectMeasurementRow(); injectPhotoSlot(); clearSignature('canvas-inspector-sig'); clearSignature('canvas-client-sig');
+            compileAutoReportNumber(); loadDefaultGlobalSettings(); document.getElementById('inp-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function triggerSystemNotification(msg, type = 'success') {
+            const el = document.getElementById('sys-toast'); el.className = `toast align-items-center border-0 text-white bg-${type}`;
+            document.getElementById('sys-toast-msg').innerText = msg; new bootstrap.Toast(el).show();
+        }
+
+        function showSystemSpinner(title, p) { document.getElementById('spinner-title').innerText = title; document.getElementById('spinner-progress-bar').style.width = `${p}%`; document.getElementById('sys-spinner-overlay').classList.remove('d-none'); }
+        function updateSystemSpinnerProgress(p) { document.getElementById('spinner-progress-bar').style.width = `${p}%`; }
+        function hideSystemSpinner() { document.getElementById('sys-spinner-overlay').classList.add('d-none'); }
+    </script>
+</body>
+</html>
