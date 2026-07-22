@@ -8,8 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-    <!-- Google Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <!-- SweetAlert2 -->
@@ -118,7 +116,7 @@
                 <button class="btn btn-sm btn-outline-primary" onclick="loadAllData()"><i class="fa-solid fa-rotate me-1"></i>Refresh Now</button>
             </div>
             <div class="row g-3 mb-4" id="statCardsContainer">
-                <!-- Dynamically Populated Summary Cards -->
+                <!-- Stat Cards -->
             </div>
             
             <!-- Charts Row -->
@@ -146,9 +144,18 @@
         <section id="enquirySection" class="glass-card p-4 mb-5">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                 <h4 class="fw-bold m-0">Enquiry & Quotation Tracker</h4>
-                <div class="d-flex flex-wrap gap-2">
-                    <input type="text" id="globalSearch" class="form-control form-control-sm" placeholder="Search enquiries..." style="width: 220px;" onkeyup="filterTable()">
-                    <button class="btn btn-sm btn-success" onclick="exportToExcel()"><i class="fa-solid fa-file-excel me-1"></i>Export</button>
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <select id="statusFilter" class="form-select form-select-sm" style="width: 160px;" onchange="filterTable()">
+                        <option value="">All Statuses</option>
+                        <option value="Draft">Draft</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Sent">Sent</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Received LPO">Received LPO</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                    <input type="text" id="globalSearch" class="form-control form-control-sm" placeholder="Search enquiries..." style="width: 200px;" onkeyup="filterTable()">
+                    <button class="btn btn-sm btn-success" onclick="exportToExcel()"><i class="fa-solid fa-file-excel me-1"></i>Export Filtered</button>
                     <button class="btn btn-sm btn-danger" onclick="bulkDelete()"><i class="fa-solid fa-trash me-1"></i>Delete Selected</button>
                 </div>
             </div>
@@ -159,9 +166,9 @@
                     <thead>
                         <tr>
                             <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
-                            <th>ID</th>
+                            <th>Enquiry Date</th>
                             <th>Enq No</th>
-                            <th>Customer</th>
+                            <th>Client</th>
                             <th>Project</th>
                             <th>Sales Eng</th>
                             <th>Quotation Value</th>
@@ -188,37 +195,42 @@
                 <div class="modal-body">
                     <form id="enquiryForm" class="row g-3">
                         <input type="hidden" id="rowId">
+
                         <div class="col-md-6">
-                            <label class="form-label">Customer Name *</label>
-                            <input type="text" class="form-control" id="customerName" required>
+                            <label class="form-label">Enquiry Date</label>
+                            <input type="text" class="form-control datepicker" id="enquiryDate">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Company</label>
-                            <input type="text" class="form-control" id="company">
+                            <label class="form-label">Client *</label>
+                            <input type="text" class="form-control" id="customerName" required placeholder="Emirates College">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Main Contractor</label>
+                            <input type="text" class="form-control" id="company" placeholder="Saleh construction">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Contact Person</label>
-                            <input type="text" class="form-control" id="contactPerson">
+                            <input type="text" class="form-control" id="contactPerson" placeholder="Niyaz">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Phone *</label>
-                            <input type="text" class="form-control" id="phone" required>
+                            <input type="text" class="form-control" id="phone" required placeholder="05012345678">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email">
+                            <input type="email" class="form-control" id="email" placeholder="abc@gmail.com">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Project Name *</label>
-                            <input type="text" class="form-control" id="projectName" required>
+                            <input type="text" class="form-control" id="projectName" required placeholder="LV Room">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Project Location</label>
-                            <input type="text" class="form-control" id="projectLocation">
+                            <input type="text" class="form-control" id="projectLocation" placeholder="Academic City Dubai">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Enquiry Source</label>
-                            <input type="text" class="form-control" id="enquirySource">
+                            <input type="text" class="form-control" id="enquirySource" placeholder="WhatsApp / Email / Call / Website">
                         </div>
                         <div class="col-12">
                             <label class="form-label">Scope of Work</label>
@@ -226,11 +238,11 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Sales Engineer *</label>
-                            <input type="text" class="form-control" id="salesEngineer" required>
+                            <input type="text" class="form-control" id="salesEngineer" required placeholder="Raja / Hariss">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Estimator</label>
-                            <input type="text" class="form-control" id="estimator">
+                            <input type="text" class="form-control" id="estimator" placeholder="Venket">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Priority *</label>
@@ -255,6 +267,7 @@
                                 <option value="Pending">Pending</option>
                                 <option value="Sent">Sent</option>
                                 <option value="Approved">Approved</option>
+                                <option value="Received LPO">Received LPO</option>
                                 <option value="Rejected">Rejected</option>
                             </select>
                         </div>
@@ -281,7 +294,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="detailsModalBody">
-                    <!-- Dynamically populated details -->
+                    <!-- Clean details -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
@@ -298,351 +311,398 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwiOChcUGkih0olR1PqY6V1jV0mTFNR-TYcjU-5QTRhe0-yW__ulDbqwng-0Jy-NtHWzw/exec";
-        let allEnquiries = [];
-        let modalInstance = null;
-        let detailsModalInstance = null;
-        let chartMonthlyEnq = null;
-        let chartMonthlyVal = null;
-        let pollInterval = null;
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwiOChcUGkih0olR1PqY6V1jV0mTFNR-TYcjU-5QTRhe0-yW__ulDbqwng-0Jy-NtHWzw/exec";
+    let allEnquiries = [];
+    let filteredEnquiries = [];
+    let modalInstance = null;
+    let detailsModalInstance = null;
+    let chartMonthlyEnq = null;
+    let chartMonthlyVal = null;
+    let pollInterval = null;
 
-        document.addEventListener("DOMContentLoaded", () => {
-            modalInstance = new bootstrap.Modal(document.getElementById('enquiryModal'));
-            detailsModalInstance = new bootstrap.Modal(document.getElementById('detailsModal'));
-            flatpickr(".datepicker", { dateFormat: "Y-m-d" });
+    document.addEventListener("DOMContentLoaded", () => {
+        modalInstance = new bootstrap.Modal(document.getElementById('enquiryModal'));
+        detailsModalInstance = new bootstrap.Modal(document.getElementById('detailsModal'));
+        
+        flatpickr(".datepicker", { dateFormat: "d-m-Y" });
+        
+        loadAllData(true);
+
+        pollInterval = setInterval(() => {
+            silentLiveSync();
+        }, 10000);
+    });
+
+    function showLoader(show) {
+        document.getElementById('loadingOverlay').classList.toggle('active', show);
+    }
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-bs-theme', newTheme);
+        document.getElementById('themeToggle').innerHTML = newTheme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+    }
+
+    async function callApi(action, payload = {}, showLoading = true) {
+        if (showLoading) showLoader(true);
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action, ...payload })
+            });
+            const result = await response.json();
+            if (showLoading) showLoader(false);
+            if (!result.success) throw new Error(result.message || 'Operation failed');
+            return result;
+        } catch (error) {
+            if (showLoading) showLoader(false);
+            if (showLoading) Swal.fire('Error', error.message, 'error');
+            throw error;
+        }
+    }
+
+    async function loadAllData(showLoading = true) {
+        try {
+            const [dashboardRes, enquiriesRes] = await Promise.all([
+                callApi('getDashboard', {}, showLoading),
+                callApi('getEnquiries', {}, false)
+            ]);
             
-            // Initial data load
-            loadAllData(true);
+            renderDashboardCards(dashboardRes.stats);
+            renderCharts(dashboardRes.chartData);
+            
+            allEnquiries = enquiriesRes.data || [];
+            filterTable(); 
+        } catch (e) { console.error(e); }
+    }
 
-            // Set up background auto-polling every 10 seconds for live updates without loading spinner
-            pollInterval = setInterval(() => {
-                silentLiveSync();
-            }, 10000);
-        });
-
-        function showLoader(show) {
-            document.getElementById('loadingOverlay').classList.toggle('active', show);
-        }
-
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-bs-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-bs-theme', newTheme);
-            document.getElementById('themeToggle').innerHTML = newTheme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
-        }
-
-        async function callApi(action, payload = {}, showLoading = true) {
-            if (showLoading) showLoader(true);
-            try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action, ...payload })
-                });
-                const result = await response.json();
-                if (showLoading) showLoader(false);
-                if (!result.success) throw new Error(result.message || 'Operation failed');
-                return result;
-            } catch (error) {
-                if (showLoading) showLoader(false);
-                if (showLoading) Swal.fire('Error', error.message, 'error');
-                throw error;
+    async function silentLiveSync() {
+        try {
+            const [dashboardRes, enquiriesRes] = await Promise.all([
+                callApi('getDashboard', {}, false),
+                callApi('getEnquiries', {}, false)
+            ]);
+            
+            renderDashboardCards(dashboardRes.stats);
+            renderCharts(dashboardRes.chartData);
+            
+            const newEnquiries = enquiriesRes.data || [];
+            if (JSON.stringify(newEnquiries) !== JSON.stringify(allEnquiries)) {
+                allEnquiries = newEnquiries;
+                filterTable(); 
             }
-        }
+        } catch (e) { console.error("Live sync background error:", e); }
+    }
 
-        async function loadAllData(showLoading = true) {
-            try {
-                const [dashboardRes, enquiriesRes] = await Promise.all([
-                    callApi('getDashboard', {}, showLoading),
-                    callApi('getEnquiries', {}, false)
-                ]);
-                
-                renderDashboardCards(dashboardRes.stats);
-                renderCharts(dashboardRes.chartData);
-                
-                allEnquiries = enquiriesRes.data || [];
-                renderTable(allEnquiries);
-            } catch (e) { console.error(e); }
-        }
-
-        async function silentLiveSync() {
-            try {
-                const [dashboardRes, enquiriesRes] = await Promise.all([
-                    callApi('getDashboard', {}, false),
-                    callApi('getEnquiries', {}, false)
-                ]);
-                
-                renderDashboardCards(dashboardRes.stats);
-                renderCharts(dashboardRes.chartData);
-                
-                const newEnquiries = enquiriesRes.data || [];
-                // Only re-render table if row count or data changes to prevent disrupting active search input/typing
-                if (JSON.stringify(newEnquiries) !== JSON.stringify(allEnquiries)) {
-                    allEnquiries = newEnquiries;
-                    filterTable(); // Keeps user search filter intact while updating live rows
-                }
-            } catch (e) { console.error("Live sync background error:", e); }
-        }
-
-        function renderDashboardCards(stats) {
-            const container = document.getElementById('statCardsContainer');
-            const cards = [
-                { title: "Total Enquiries", val: stats.totalEnquiries || 0, color: "primary" },
-                { title: "Open Enquiries", val: stats.openEnquiries || 0, color: "warning" },
-                { title: "Quotation Sent", val: stats.quotationSent || 0, color: "info" },
-                { title: "Jobs Won", val: stats.jobsWon || 0, color: "success" },
-                { title: "Jobs Lost", val: stats.jobsLost || 0, color: "danger" },
-                { title: "Total Value", val: `AED ${Number(stats.totalValue || 0).toLocaleString()}`, color: "dark" }
-            ];
-            container.innerHTML = cards.map(c => `
-                <div class="col-xl-4 col-md-6">
-                    <div class="glass-card p-3 border-start border-${c.color} border-4">
-                        <div class="text-muted small text-uppercase fw-bold">${c.title}</div>
-                        <div class="stat-card-val text-${c.color}">${c.val}</div>
-                    </div>
+    function renderDashboardCards(stats) {
+        const container = document.getElementById('statCardsContainer');
+        const cards = [
+            { title: "Total Enquiries", val: stats.totalEnquiries || 0, color: "primary" },
+            { title: "Open Enquiries", val: stats.openEnquiries || 0, color: "warning" },
+            { title: "Quotation Sent", val: stats.quotationSent || 0, color: "info" },
+            { title: "Jobs Won", val: stats.jobsWon || 0, color: "success" },
+            { title: "Jobs Lost", val: stats.jobsLost || 0, color: "danger" },
+            { title: "Total Value", val: `AED ${Number(stats.totalValue || 0).toLocaleString()}`, color: "dark" }
+        ];
+        container.innerHTML = cards.map(c => `
+            <div class="col-xl-4 col-md-6">
+                <div class="glass-card p-3 border-start border-${c.color} border-4">
+                    <div class="text-muted small text-uppercase fw-bold">${c.title}</div>
+                    <div class="stat-card-val text-${c.color}">${c.val}</div>
                 </div>
-            `).join('');
-        }
+            </div>
+        `).join('');
+    }
 
-        function renderCharts(data) {
-            if (!data) return;
-            
-            const ctx1 = document.getElementById('chartMonthlyEnquiries').getContext('2d');
-            if (chartMonthlyEnq) chartMonthlyEnq.destroy();
+    function renderCharts(data) {
+        if (!data) return;
+        
+        const ctx1 = document.getElementById('chartMonthlyEnquiries').getContext('2d');
+        if (chartMonthlyEnq) {
+            chartMonthlyEnq.data.labels = data.months || [];
+            chartMonthlyEnq.data.datasets[0].data = data.enquiries || [];
+            chartMonthlyEnq.update();
+        } else {
             chartMonthlyEnq = new Chart(ctx1, {
                 type: 'line',
                 data: {
                     labels: data.months || [],
                     datasets: [{ label: 'Enquiries', data: data.enquiries || [], borderColor: '#4f46e5', tension: 0.3, fill: false }]
                 },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false 
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
+        }
 
-            const ctx2 = document.getElementById('chartMonthlyValue').getContext('2d');
-            if (chartMonthlyVal) chartMonthlyVal.destroy();
+        const ctx2 = document.getElementById('chartMonthlyValue').getContext('2d');
+        if (chartMonthlyVal) {
+            chartMonthlyVal.data.labels = data.months || [];
+            chartMonthlyVal.data.datasets[0].data = data.values || [];
+            chartMonthlyVal.update();
+        } else {
             chartMonthlyVal = new Chart(ctx2, {
                 type: 'bar',
                 data: {
                     labels: data.months || [],
                     datasets: [{ label: 'Value (AED)', data: data.values || [], backgroundColor: '#06b6d4' }]
                 },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false 
-                }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
+    }
 
-        function renderTable(data) {
-            const tbody = document.getElementById('enquiryTableBody');
-            tbody.innerHTML = data.map(row => `
-                <tr style="cursor: pointer;" onclick="viewEnquiryDetails(event, '${row[0]}')">
-                    <td onclick="event.stopPropagation()"><input type="checkbox" class="row-select" value="${row[0]}"></td>
-                    <td>${row[0]}</td>
-                    <td>${row[3] || ''}</td>
-                    <td>${row[4] || ''}</td>
-                    <td>${row[9] || ''}</td>
-                    <td>${row[13] || ''}</td>
-                    <td>AED ${Number(row[19] || 0).toLocaleString()}</td>
-                    <td><span class="badge bg-secondary">${row[22] || 'Draft'}</span></td>
-                    <td onclick="event.stopPropagation()">
-                        <button class="btn btn-sm btn-outline-primary" onclick="editEnquiry('${row[0]}')"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteEnquiry('${row[0]}')"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+    function renderTable(data) {
+        const tbody = document.getElementById('enquiryTableBody');
+        tbody.innerHTML = data.map(row => `
+            <tr style="cursor: pointer;" onclick="viewEnquiryDetails(event, '${row[0]}')">
+                <td onclick="event.stopPropagation()"><input type="checkbox" class="row-select" value="${row[0]}"></td>
+                <td>${row[18] || ''}</td>
+                <td>${row[1] || ''}</td>
+                <td>${row[2] || ''}</td>
+                <td>${row[7] || ''}</td>
+                <td>${row[11] || ''}</td>
+                <td>AED ${Number(row[15] || 0).toLocaleString()}</td>
+                <td><span class="badge bg-secondary">${row[16] || 'Draft'}</span></td>
+                <td onclick="event.stopPropagation()">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editEnquiry('${row[0]}')"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteEnquiry('${row[0]}')"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function viewEnquiryDetails(event, id) {
+        const row = allEnquiries.find(r => r[0] == id);
+        if (!row) return;
+
+        const displayFields = [
+            { label: "Enquiry Date", index: 18 },
+            { label: "Enquiry Number", index: 1 },
+            { label: "Client", index: 2 },
+            { label: "Main Contractor", index: 3 },
+            { label: "Contact Person", index: 4 },
+            { label: "Phone", index: 5 },
+            { label: "Email", index: 6 },
+            { label: "Project Name", index: 7 },
+            { label: "Project Location", index: 8 },
+            { label: "Enquiry Source", index: 9 },
+            { label: "Scope of Work", index: 10 },
+            { label: "Sales Engineer", index: 11 },
+            { label: "Estimator", index: 12 },
+            { label: "Priority", index: 13 },
+            { label: "Tender Closing Date", index: 14 },
+            { label: "Quotation Value", index: 15, format: val => `AED ${Number(val).toLocaleString()}` },
+            { label: "Quotation Status", index: 16 },
+            { label: "Remarks", index: 17 }
+        ];
+
+        let htmlContent = '<div class="row g-3">';
+        displayFields.forEach(field => {
+            let rawVal = row[field.index];
+            let val = (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '') ? rawVal : '-';
+            if (val !== '-' && field.format) {
+                val = field.format(val);
+            }
+            htmlContent += `
+                <div class="col-md-6 border-bottom pb-2">
+                    <span class="text-muted small d-block fw-semibold text-uppercase">${field.label}</span>
+                    <span class="text-body fw-medium">${val}</span>
+                </div>
+            `;
+        });
+        htmlContent += '</div>';
+
+        document.getElementById('detailsModalBody').innerHTML = htmlContent;
+        detailsModalInstance.show();
+    }
+
+    function openEnquiryModal() {
+        document.getElementById('enquiryForm').reset();
+        document.getElementById('rowId').value = '';
+        document.getElementById('modalTitle').innerText = 'New Enquiry & Quotation';
+        modalInstance.show();
+    }
+
+    async function saveEnquiryRecord() {
+        const payload = {
+            id: document.getElementById('rowId').value,
+            enquiryDate: document.getElementById('enquiryDate').value,
+            customerName: document.getElementById('customerName').value,
+            company: document.getElementById('company').value,
+            contactPerson: document.getElementById('contactPerson').value,
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value,
+            projectName: document.getElementById('projectName').value,
+            projectLocation: document.getElementById('projectLocation').value,
+            enquirySource: document.getElementById('enquirySource').value,
+            scopeOfWork: document.getElementById('scopeOfWork').value,
+            salesEngineer: document.getElementById('salesEngineer').value,
+            estimator: document.getElementById('estimator').value,
+            priority: document.getElementById('priority').value,
+            tenderClosingDate: document.getElementById('tenderClosingDate').value,
+            quotationValue: document.getElementById('quotationValue').value,
+            quotationStatus: document.getElementById('quotationStatus').value,
+            remarks: document.getElementById('remarks').value
+        };
+
+        const action = payload.id ? 'updateEnquiry' : 'saveEnquiry';
+        await callApi(action, payload);
+        modalInstance.hide();
+        Swal.fire('Success', 'Enquiry saved successfully!', 'success');
+        loadAllData(false);
+    }
+
+    async function editEnquiry(id) {
+        const { value: password } = await Swal.fire({
+            title: 'Enter Password to Edit',
+            input: 'password',
+            inputPlaceholder: 'Enter security password',
+            showCancelButton: true,
+            confirmButtonText: 'Verify'
+        });
+
+        if (!password) return;
+
+        try {
+            const res = await callApi('verifyPassword', { password });
+            if (!res.authorized) {
+                return Swal.fire('Error', 'Incorrect password!', 'error');
+            }
+        } catch (e) {
+            return;
         }
 
-        function viewEnquiryDetails(event, id) {
-            const row = allEnquiries.find(r => r[0] == id);
-            if (!row) return;
+        const row = allEnquiries.find(r => r[0] == id);
+        if (!row) return;
+        document.getElementById('rowId').value = row[0];
+        document.getElementById('customerName').value = row[2] || '';
+        document.getElementById('company').value = row[3] || '';
+        document.getElementById('contactPerson').value = row[4] || '';
+        document.getElementById('phone').value = row[5] || '';
+        document.getElementById('email').value = row[6] || '';
+        document.getElementById('projectName').value = row[7] || '';
+        document.getElementById('projectLocation').value = row[8] || '';
+        document.getElementById('enquirySource').value = row[9] || '';
+        document.getElementById('scopeOfWork').value = row[10] || '';
+        document.getElementById('salesEngineer').value = row[11] || '';
+        document.getElementById('estimator').value = row[12] || '';
+        document.getElementById('priority').value = row[13] || 'Normal';
+        document.getElementById('tenderClosingDate').value = row[14] || '';
+        document.getElementById('quotationValue').value = row[15] || '';
+        document.getElementById('quotationStatus').value = row[16] || 'Draft';
+        document.getElementById('remarks').value = row[17] || '';
+        document.getElementById('enquiryDate').value = row[18] || '';
+        document.getElementById('modalTitle').innerText = 'Edit Enquiry & Quotation';
+        modalInstance.show();
+    }
 
-            const headers = [
-                "ID", "Created Date", "Created Time", "Enquiry Number", "Customer Name", "Contact Person", 
-                "Phone", "Email", "Company", "Project Name", "Project Location", "Enquiry Source", 
-                "Scope of Work", "Sales Engineer", "Estimator", "Priority", "Tender Closing Date", 
-                "Quotation Number", "Quotation Date", "Quotation Value", "Currency", "Revision Number", 
-                "Quotation Status", "Follow-up Date", "Follow-up Status", "Customer Response", "Job Status", 
-                "Remarks", "Attachment Link", "Created By", "Updated Date", "Updated Time"
-            ];
+    async function deleteEnquiry(id) {
+        const { value: password } = await Swal.fire({
+            title: 'Enter Password to Delete',
+            input: 'password',
+            inputPlaceholder: 'Enter security password',
+            showCancelButton: true,
+            confirmButtonText: 'Verify & Delete'
+        });
 
-            let htmlContent = '<div class="row g-3">';
-            headers.forEach((header, index) => {
-                let val = row[index] !== undefined && row[index] !== '' ? row[index] : '-';
-                if (index === 19 && val !== '-') {
-                    val = `AED ${Number(val).toLocaleString()}`;
-                }
-                htmlContent += `
-                    <div class="col-md-6 border-bottom pb-2">
-                        <span class="text-muted small d-block fw-semibold text-uppercase">${header}</span>
-                        <span class="text-body fw-medium">${val}</span>
-                    </div>
-                `;
-            });
-            htmlContent += '</div>';
+        if (!password) return;
 
-            document.getElementById('detailsModalBody').innerHTML = htmlContent;
-            detailsModalInstance.show();
+        try {
+            const res = await callApi('verifyPassword', { password });
+            if (!res.authorized) {
+                return Swal.fire('Error', 'Incorrect password!', 'error');
+            }
+        } catch (e) {
+            return;
         }
 
-        function openEnquiryModal() {
-            document.getElementById('enquiryForm').reset();
-            document.getElementById('rowId').value = '';
-            document.getElementById('modalTitle').innerText = 'New Enquiry & Quotation';
-            modalInstance.show();
-        }
-
-        async function saveEnquiryRecord() {
-            const payload = {
-                id: document.getElementById('rowId').value,
-                customerName: document.getElementById('customerName').value,
-                company: document.getElementById('company').value,
-                contactPerson: document.getElementById('contactPerson').value,
-                phone: document.getElementById('phone').value,
-                email: document.getElementById('email').value,
-                projectName: document.getElementById('projectName').value,
-                projectLocation: document.getElementById('projectLocation').value,
-                enquirySource: document.getElementById('enquirySource').value,
-                scopeOfWork: document.getElementById('scopeOfWork').value,
-                salesEngineer: document.getElementById('salesEngineer').value,
-                estimator: document.getElementById('estimator').value,
-                priority: document.getElementById('priority').value,
-                tenderClosingDate: document.getElementById('tenderClosingDate').value,
-                quotationValue: document.getElementById('quotationValue').value,
-                quotationStatus: document.getElementById('quotationStatus').value,
-                remarks: document.getElementById('remarks').value
-            };
-
-            const action = payload.id ? 'updateEnquiry' : 'saveEnquiry';
-            await callApi(action, payload);
-            modalInstance.hide();
-            Swal.fire('Success', 'Enquiry saved successfully!', 'success');
+        const confirm = await Swal.fire({ title: 'Are you sure?', text: "You won't be able to revert this!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete it!' });
+        if (confirm.isConfirmed) {
+            await callApi('deleteEnquiry', { id });
+            Swal.fire('Deleted!', 'Record has been deleted.', 'success');
             loadAllData(false);
         }
+    }
 
-        async function editEnquiry(id) {
-            const { value: password } = await Swal.fire({
-                title: 'Enter Password to Edit',
-                input: 'password',
-                inputPlaceholder: 'Enter security password',
-                showCancelButton: true,
-                confirmButtonText: 'Verify'
-            });
+    function filterTable() {
+        const query = document.getElementById('globalSearch').value.toLowerCase();
+        const statusVal = document.getElementById('statusFilter').value;
 
-            if (!password) return;
+        filteredEnquiries = allEnquiries.filter(row => {
+            const matchesSearch = row.some(cell => String(cell).toLowerCase().includes(query));
+            const matchesStatus = statusVal === "" || row[16] === statusVal;
+            return matchesSearch && matchesStatus;
+        });
+        renderTable(filteredEnquiries);
+    }
 
-            try {
-                const res = await callApi('verifyPassword', { password });
-                if (!res.authorized) {
-                    return Swal.fire('Error', 'Incorrect password!', 'error');
-                }
-            } catch (e) {
-                return;
+    function toggleSelectAll(source) {
+        document.querySelectorAll('.row-select').forEach(cb => cb.checked = source.checked);
+    }
+
+    function exportToExcel() {
+        if (!filteredEnquiries || filteredEnquiries.length === 0) {
+            return Swal.fire('Warning', 'No filtered data available to export', 'warning');
+        }
+
+        const formattedDataForExcel = filteredEnquiries.map(row => ({
+            "Enquiry Date": row[18] || '',
+            "Enquiry Number": row[1] || '',
+            "Client": row[2] || '',
+            "Main Contractor": row[3] || '',
+            "Contact Person": row[4] || '',
+            "Phone": row[5] || '',
+            "Email": row[6] || '',
+            "Project Name": row[7] || '',
+            "Project Location": row[8] || '',
+            "Enquiry Source": row[9] || '',
+            "Scope of Work": row[10] || '',
+            "Sales Engineer": row[11] || '',
+            "Estimator": row[12] || '',
+            "Priority": row[13] || '',
+            "Tender Closing Date": row[14] || '',
+            "Quotation Value (AED)": row[15] || 0,
+            "Quotation Status": row[16] || '',
+            "Remarks": row[17] || ''
+        }));
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(formattedDataForExcel);
+        XLSX.utils.book_append_sheet(wb, ws, "Filtered_Enquiries");
+        XLSX.writeFile(wb, "Filtered_Enquiries_Report.xlsx");
+    }
+
+    async function bulkDelete() {
+        const selected = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => cb.value);
+        if (selected.length === 0) return Swal.fire('Warning', 'No rows selected', 'warning');
+
+        const { value: password } = await Swal.fire({
+            title: `Enter Password to Delete ${selected.length} Records`,
+            input: 'password',
+            inputPlaceholder: 'Enter security password',
+            showCancelButton: true,
+            confirmButtonText: 'Verify & Delete'
+        });
+
+        if (!password) return;
+
+        try {
+            const res = await callApi('verifyPassword', { password });
+            if (!res.authorized) {
+                return Swal.fire('Error', 'Incorrect password!', 'error');
             }
-
-            const row = allEnquiries.find(r => r[0] == id);
-            if (!row) return;
-            document.getElementById('rowId').value = row[0];
-            document.getElementById('customerName').value = row[4] || '';
-            document.getElementById('company').value = row[8] || '';
-            document.getElementById('contactPerson').value = row[5] || '';
-            document.getElementById('phone').value = row[6] || '';
-            document.getElementById('email').value = row[7] || '';
-            document.getElementById('projectName').value = row[9] || '';
-            document.getElementById('projectLocation').value = row[10] || '';
-            document.getElementById('enquirySource').value = row[11] || '';
-            document.getElementById('scopeOfWork').value = row[12] || '';
-            document.getElementById('salesEngineer').value = row[13] || '';
-            document.getElementById('estimator').value = row[14] || '';
-            document.getElementById('priority').value = row[15] || 'Normal';
-            document.getElementById('tenderClosingDate').value = row[16] || '';
-            document.getElementById('quotationValue').value = row[19] || '';
-            document.getElementById('quotationStatus').value = row[22] || 'Draft';
-            document.getElementById('remarks').value = row[27] || '';
-            document.getElementById('modalTitle').innerText = 'Edit Enquiry & Quotation';
-            modalInstance.show();
+        } catch (e) {
+            return;
         }
 
-        async function deleteEnquiry(id) {
-            const { value: password } = await Swal.fire({
-                title: 'Enter Password to Delete',
-                input: 'password',
-                inputPlaceholder: 'Enter security password',
-                showCancelButton: true,
-                confirmButtonText: 'Verify & Delete'
-            });
-
-            if (!password) return;
-
-            try {
-                const res = await callApi('verifyPassword', { password });
-                if (!res.authorized) {
-                    return Swal.fire('Error', 'Incorrect password!', 'error');
-                }
-            } catch (e) {
-                return;
-            }
-
-            const confirm = await Swal.fire({ title: 'Are you sure?', text: "You won't be able to revert this!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete it!' });
-            if (confirm.isConfirmed) {
-                await callApi('deleteEnquiry', { id });
-                Swal.fire('Deleted!', 'Record has been deleted.', 'success');
-                loadAllData(false);
-            }
+        const confirm = await Swal.fire({ title: 'Are you sure?', text: `Delete ${selected.length} records?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete!' });
+        if (confirm.isConfirmed) {
+            await callApi('bulkDeleteEnquiries', { ids: selected });
+            Swal.fire('Deleted!', 'Selected records have been deleted.', 'success');
+            loadAllData(false);
         }
-
-        function filterTable() {
-            const query = document.getElementById('globalSearch').value.toLowerCase();
-            const filtered = allEnquiries.filter(row => row.some(cell => String(cell).toLowerCase().includes(query)));
-            renderTable(filtered);
-        }
-
-        function toggleSelectAll(source) {
-            document.querySelectorAll('.row-select').forEach(cb => cb.checked = source.checked);
-        }
-
-        function exportToExcel() {
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(allEnquiries);
-            XLSX.utils.book_append_sheet(wb, ws, "Enquiries");
-            XLSX.writeFile(wb, "Enquiries_Report.xlsx");
-        }
-
-        async function bulkDelete() {
-            const selected = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => cb.value);
-            if (selected.length === 0) return Swal.fire('Warning', 'No rows selected', 'warning');
-
-            const { value: password } = await Swal.fire({
-                title: `Enter Password to Delete ${selected.length} Records`,
-                input: 'password',
-                inputPlaceholder: 'Enter security password',
-                showCancelButton: true,
-                confirmButtonText: 'Verify & Delete'
-            });
-
-            if (!password) return;
-
-            try {
-                const res = await callApi('verifyPassword', { password });
-                if (!res.authorized) {
-                    return Swal.fire('Error', 'Incorrect password!', 'error');
-                }
-            } catch (e) {
-                return;
-            }
-
-            const confirm = await Swal.fire({ title: `Delete ${selected.length} records?`, icon: 'warning', showCancelButton: true });
-            if (confirm.isConfirmed) {
-                for (let id of selected) {
-                    await callApi('deleteEnquiry', { id });
-                }
-                Swal.fire('Deleted!', 'Selected records removed.', 'success');
-                loadAllData(false);
-            }
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
