@@ -223,7 +223,7 @@
                             <input type="text" class="form-control" id="customerName" required placeholder="Emirates College">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Main Contractor</label>
+                            <label class="form-label">Main Contractor *</label>
                             <input type="text" class="form-control" id="company" placeholder="Saleh construction">
                         </div>
                         <div class="col-md-6">
@@ -231,8 +231,8 @@
                             <input type="text" class="form-control" id="contactPerson" placeholder="Niyaz">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Phone *</label>
-                            <input type="text" class="form-control" id="phone" required placeholder="05012345678">
+                            <label class="form-label">Phone</label>
+                            <input type="number" class="form-control" id="phone" required placeholder="05012345678">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Email</label>
@@ -243,15 +243,15 @@
                             <input type="text" class="form-control" id="projectName" required placeholder="LV Room">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Project Location</label>
+                            <label class="form-label">Project Location *</label>
                             <input type="text" class="form-control" id="projectLocation" placeholder="Academic City Dubai">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Enquiry Source</label>
+                            <label class="form-label">Enquiry Source *</label>
                             <input type="text" class="form-control" id="enquirySource" placeholder="WhatsApp / Email / Call / Website">
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Scope of Work</label>
+                            <label class="form-label">Scope of Work *</label>
                             <textarea class="form-control" id="scopeOfWork" rows="2"></textarea>
                         </div>
                         <div class="col-md-4">
@@ -263,7 +263,7 @@
                             <input type="text" class="form-control" id="estimator" placeholder="Venket">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Priority *</label>
+                            <label class="form-label">Priority</label>
                             <select class="form-select" id="priority">
                                 <option value="Normal">Normal</option>
                                 <option value="High">High</option>
@@ -298,7 +298,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="saveEnquiryRecord()">Save Enquiry</button>
+                    <button type="submit" class="btn btn-primary" id="saveBtn" disabled>Save Enquiry</button>
                 </div>
             </div>
         </div>
@@ -723,6 +723,57 @@ function viewEnquiryDetails(event, id) {
         XLSX.utils.book_append_sheet(wb, ws, "Filtered_Enquiries");
         XLSX.writeFile(wb, "Filtered_Enquiries_Report.xlsx");
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+  const saveBtn = document.getElementById("saveBtn");
+  
+  // Define mandatory field IDs based on your form fields marked with *
+  const mandatoryFields = [
+    document.getElementById("customerName"),
+    document.getElementById("projectName"),
+    document.getElementById("salesEngineer")
+  ];
+
+  function validateForm() {
+    let allFilled = true;
+    
+    mandatoryFields.forEach(field => {
+      if (!field || !field.value.trim()) {
+        allFilled = false;
+      }
+    });
+
+    if (allFilled) {
+      saveBtn.removeAttribute("disabled");
+      saveBtn.classList.remove("opacity-50", "cursor-not-allowed"); // Optional: clear disabled styling if any
+    } else {
+      saveBtn.setAttribute("disabled", "true");
+    }
+  }
+
+  // Listen for typing/changes in all fields
+  mandatoryFields.forEach(field => {
+    if (field) {
+      field.addEventListener("input", validateForm);
+      field.addEventListener("change", validateForm);
+    }
+  });
+
+  // Optional: Click handler to show an error message if someone tries to force-click it
+  saveBtn.addEventListener("click", function (e) {
+    let allFilled = true;
+    mandatoryFields.forEach(field => {
+      if (!field || !field.value.trim()) {
+        allFilled = false;
+      }
+    });
+
+    if (!allFilled) {
+      e.preventDefault();
+      alert("Please fill mandatory cells before saving.");
+    }
+  });
+});
 
     async function bulkDelete() {
         const selected = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => cb.value);
