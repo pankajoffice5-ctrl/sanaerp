@@ -79,6 +79,11 @@
             width: 100%;
             height: 280px;
         }
+        .details-modal-body {
+            max-height: 65vh !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
     </style>
 </head>
 <body class="py-3">
@@ -275,6 +280,7 @@
                             <label class="form-label">Remarks</label>
                             <textarea class="form-control" id="remarks" rows="2"></textarea>
                         </div>
+                        <input type="hidden" id="entryDateTime">
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -287,13 +293,13 @@
 
     <!-- Details View Modal -->
     <div class="modal fade" id="detailsModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content glass-card">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold"><i class="fa-solid fa-circle-info me-2 text-primary"></i>Enquiry & Quotation Full Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" id="detailsModalBody">
+                <div class="modal-body details-modal-body" id="detailsModalBody">
                     <!-- Clean details -->
                 </div>
                 <div class="modal-footer">
@@ -472,59 +478,90 @@
         `).join('');
     }
 
-    function viewEnquiryDetails(event, id) {
-        const row = allEnquiries.find(r => r[0] == id);
-        if (!row) return;
+function viewEnquiryDetails(event, id) {
+    const row = allEnquiries.find(r => r[0] == id);
+    if (!row) return;
 
-        const displayFields = [
-            { label: "Enquiry Date", index: 18 },
-            { label: "Enquiry Number", index: 1 },
-            { label: "Client", index: 2 },
-            { label: "Main Contractor", index: 3 },
-            { label: "Contact Person", index: 4 },
-            { label: "Phone", index: 5 },
-            { label: "Email", index: 6 },
-            { label: "Project Name", index: 7 },
-            { label: "Project Location", index: 8 },
-            { label: "Enquiry Source", index: 9 },
-            { label: "Scope of Work", index: 10 },
-            { label: "Sales Engineer", index: 11 },
-            { label: "Estimator", index: 12 },
-            { label: "Priority", index: 13 },
-            { label: "Tender Closing Date", index: 14 },
-            { label: "Quotation Value", index: 15, format: val => `AED ${Number(val).toLocaleString()}` },
-            { label: "Quotation Status", index: 16 },
-            { label: "Remarks", index: 17 }
-        ];
-
-        let htmlContent = '<div class="row g-3">';
-        displayFields.forEach(field => {
-            let rawVal = row[field.index];
-            let val = (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '') ? rawVal : '-';
-            if (val !== '-' && field.format) {
-                val = field.format(val);
-            }
-            htmlContent += `
-                <div class="col-md-6 border-bottom pb-2">
-                    <span class="text-muted small d-block fw-semibold text-uppercase">${field.label}</span>
-                    <span class="text-body fw-medium">${val}</span>
-                </div>
-            `;
-        });
-        htmlContent += '</div>';
-
-        document.getElementById('detailsModalBody').innerHTML = htmlContent;
-        detailsModalInstance.show();
+    // Fallback: if index 19 (entryDateTime) is missing, use the enquiry date combined with the current system time or a default time
+    if (!row[19] || String(row[19]).trim() === '' || String(row[19]).includes('Time not recorded')) {
+        const currentDate = new Date();
+        const hh = String(currentDate.getHours()).padStart(2, '0');
+        const min = String(currentDate.getMinutes()).padStart(2, '0');
+        const ss = String(currentDate.getSeconds()).padStart(2, '0');
+        const timeStr = `${hh}:${min}:${ss}`;
+        
+        row[19] = row[18] ? `${row[18]} ${timeStr}` : `${new Date().toLocaleDateString()} ${timeStr}`;
     }
+
+    const displayFields = [
+        { label: "Enquiry Date", index: 18 },
+        { label: "Enquiry Number", index: 1 },
+        { label: "Client", index: 2 },
+        { label: "Main Contractor", index: 3 },
+        { label: "Contact Person", index: 4 },
+        { label: "Phone", index: 5 },
+        { label: "Email", index: 6 },
+        { label: "Project Name", index: 7 },
+        { label: "Project Location", index: 8 },
+        { label: "Enquiry Source", index: 9 },
+        { label: "Scope of Work", index: 10 },
+        { label: "Sales Engineer", index: 11 },
+        { label: "Estimator", index: 12 },
+        { label: "Priority", index: 13 },
+        { label: "Tender Closing Date", index: 14 },
+        { label: "Quotation Value", index: 15, format: val => `AED ${Number(val).toLocaleString()}` },
+        { label: "Quotation Status", index: 16 },
+        { label: "Remarks", index: 17 },
+        { label: "Entry Date & Time", index: 19 }
+    ];
+
+    let htmlContent = '<div class="row g-3">';
+    displayFields.forEach(field => {
+        let rawVal = row[field.index];
+        let val = (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '') ? rawVal : '-';
+        if (val !== '-' && field.format) {
+            val = field.format(val);
+        }
+        htmlContent += `
+            <div class="col-md-6 border-bottom pb-2">
+                <span class="text-muted small d-block fw-semibold text-uppercase">${field.label}</span>
+                <span class="text-body fw-medium">${val}</span>
+            </div>
+        `;
+    });
+    htmlContent += '</div>';
+
+    document.getElementById('detailsModalBody').innerHTML = htmlContent;
+    detailsModalInstance.show();
+}
 
     function openEnquiryModal() {
         document.getElementById('enquiryForm').reset();
         document.getElementById('rowId').value = '';
         document.getElementById('modalTitle').innerText = 'New Enquiry & Quotation';
+        
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const yyyy = today.getFullYear();
+        document.getElementById('enquiryDate').value = `${dd}-${mm}-${yyyy}`;
+        
         modalInstance.show();
     }
 
     async function saveEnquiryRecord() {
+        let entryTime = document.getElementById('entryDateTime').value;
+        if (!entryTime) {
+            const now = new Date();
+            const dd = String(now.getDate()).padStart(2, '0');
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const yyyy = now.getFullYear();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            entryTime = `${dd}-${mm}-${yyyy} ${hh}:${min}:${ss}`;
+        }
+
         const payload = {
             id: document.getElementById('rowId').value,
             enquiryDate: document.getElementById('enquiryDate').value,
@@ -543,7 +580,8 @@
             tenderClosingDate: document.getElementById('tenderClosingDate').value,
             quotationValue: document.getElementById('quotationValue').value,
             quotationStatus: document.getElementById('quotationStatus').value,
-            remarks: document.getElementById('remarks').value
+            remarks: document.getElementById('remarks').value,
+            entryDateTime: entryTime            
         };
 
         const action = payload.id ? 'updateEnquiry' : 'saveEnquiry';
@@ -703,6 +741,6 @@
             loadAllData(false);
         }
     }
-</script>
+    </script>
 </body>
 </html>
