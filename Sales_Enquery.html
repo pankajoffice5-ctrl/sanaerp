@@ -298,7 +298,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary" id="saveBtn" disabled>Save Enquiry</button>
+                    <!-- Fixed: Added onclick="saveEnquiryRecord()" -->
+                    <button type="button" class="btn btn-primary" id="saveBtn" disabled onclick="saveEnquiryRecord()">Save Enquiry</button>
                 </div>
             </div>
         </div>
@@ -330,7 +331,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwiOChcUGkih0olR1PqY6V1jV0mTFNR-TYcjU-5QTRhe0-yW__ulDbqwng-0Jy-NtHWzw/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_8QaIRG_TFXa8W0QdGP348RD8T_HF5563tg1TAvTRKlufWvhjpVXmuivaE3dKX4qCUg/exec";
     let allEnquiries = [];
     let filteredEnquiries = [];
     let modalInstance = null;
@@ -350,6 +351,9 @@
         pollInterval = setInterval(() => {
             silentLiveSync();
         }, 10000);
+
+        // Setup validation listeners right after DOM content loads
+        setupFormValidation();
     });
 
     function showLoader(show) {
@@ -491,62 +495,61 @@
         `).join('');
     }
 
-function viewEnquiryDetails(event, id) {
-    const row = allEnquiries.find(r => r[0] == id);
-    if (!row) return;
+    function viewEnquiryDetails(event, id) {
+        const row = allEnquiries.find(r => r[0] == id);
+        if (!row) return;
 
-    // Fallback: if index 19 (entryDateTime) is missing, use the enquiry date combined with the current system time or a default time
-    if (!row[19] || String(row[19]).trim() === '' || String(row[19]).includes('Time not recorded')) {
-        const currentDate = new Date();
-        const hh = String(currentDate.getHours()).padStart(2, '0');
-        const min = String(currentDate.getMinutes()).padStart(2, '0');
-        const ss = String(currentDate.getSeconds()).padStart(2, '0');
-        const timeStr = `${hh}:${min}:${ss}`;
-        
-        row[19] = row[18] ? `${row[18]} ${timeStr}` : `${new Date().toLocaleDateString()} ${timeStr}`;
-    }
-
-    const displayFields = [
-        { label: "Enquiry Date", index: 18 },
-        { label: "Enquiry Number", index: 1 },
-        { label: "Client", index: 2 },
-        { label: "Main Contractor", index: 3 },
-        { label: "Contact Person", index: 4 },
-        { label: "Phone", index: 5 },
-        { label: "Email", index: 6 },
-        { label: "Project Name", index: 7 },
-        { label: "Project Location", index: 8 },
-        { label: "Enquiry Source", index: 9 },
-        { label: "Scope of Work", index: 10 },
-        { label: "Sales Engineer", index: 11 },
-        { label: "Estimator", index: 12 },
-        { label: "Priority", index: 13 },
-        { label: "Tender Closing Date", index: 14 },
-        { label: "Quotation Value", index: 15, format: val => `AED ${Number(val).toLocaleString()}` },
-        { label: "Quotation Status", index: 16 },
-        { label: "Remarks", index: 17 },
-        { label: "Entry Date & Time", index: 19 }
-    ];
-
-    let htmlContent = '<div class="row g-3">';
-    displayFields.forEach(field => {
-        let rawVal = row[field.index];
-        let val = (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '') ? rawVal : '-';
-        if (val !== '-' && field.format) {
-            val = field.format(val);
+        if (!row[19] || String(row[19]).trim() === '' || String(row[19]).includes('Time not recorded')) {
+            const currentDate = new Date();
+            const hh = String(currentDate.getHours()).padStart(2, '0');
+            const min = String(currentDate.getMinutes()).padStart(2, '0');
+            const ss = String(currentDate.getSeconds()).padStart(2, '0');
+            const timeStr = `${hh}:${min}:${ss}`;
+            
+            row[19] = row[18] ? `${row[18]} ${timeStr}` : `${new Date().toLocaleDateString()} ${timeStr}`;
         }
-        htmlContent += `
-            <div class="col-md-6 border-bottom pb-2">
-                <span class="text-muted small d-block fw-semibold text-uppercase">${field.label}</span>
-                <span class="text-body fw-medium">${val}</span>
-            </div>
-        `;
-    });
-    htmlContent += '</div>';
 
-    document.getElementById('detailsModalBody').innerHTML = htmlContent;
-    detailsModalInstance.show();
-}
+        const displayFields = [
+            { label: "Enquiry Date", index: 18 },
+            { label: "Enquiry Number", index: 1 },
+            { label: "Client", index: 2 },
+            { label: "Main Contractor", index: 3 },
+            { label: "Contact Person", index: 4 },
+            { label: "Phone", index: 5 },
+            { label: "Email", index: 6 },
+            { label: "Project Name", index: 7 },
+            { label: "Project Location", index: 8 },
+            { label: "Enquiry Source", index: 9 },
+            { label: "Scope of Work", index: 10 },
+            { label: "Sales Engineer", index: 11 },
+            { label: "Estimator", index: 12 },
+            { label: "Priority", index: 13 },
+            { label: "Tender Closing Date", index: 14 },
+            { label: "Quotation Value", index: 15, format: val => `AED ${Number(val).toLocaleString()}` },
+            { label: "Quotation Status", index: 16 },
+            { label: "Remarks", index: 17 },
+            { label: "Entry Date & Time", index: 19 }
+        ];
+
+        let htmlContent = '<div class="row g-3">';
+        displayFields.forEach(field => {
+            let rawVal = row[field.index];
+            let val = (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '') ? rawVal : '-';
+            if (val !== '-' && field.format) {
+                val = field.format(val);
+            }
+            htmlContent += `
+                <div class="col-md-6 border-bottom pb-2">
+                    <span class="text-muted small d-block fw-semibold text-uppercase">${field.label}</span>
+                    <span class="text-body fw-medium">${val}</span>
+                </div>
+            `;
+        });
+        htmlContent += '</div>';
+
+        document.getElementById('detailsModalBody').innerHTML = htmlContent;
+        detailsModalInstance.show();
+    }
 
     function openEnquiryModal() {
         document.getElementById('enquiryForm').reset();
@@ -560,9 +563,49 @@ function viewEnquiryDetails(event, id) {
         document.getElementById('enquiryDate').value = `${dd}-${mm}-${yyyy}`;
         
         modalInstance.show();
+        // Trigger verification so button state updates correctly for cleared inputs
+        setTimeout(validateFormState, 100);
+    }
+
+    function validateFormState() {
+        const saveBtn = document.getElementById("saveBtn");
+        if (!saveBtn) return;
+
+        // Check required fields based on your form markup:
+        // Client (*), Project Name (*), Sales Engineer (*)
+        const customerName = document.getElementById("customerName").value.trim();
+        const projectName = document.getElementById("projectName").value.trim();
+        const salesEngineer = document.getElementById("salesEngineer").value.trim();
+
+        if (customerName && projectName && salesEngineer) {
+            saveBtn.removeAttribute("disabled");
+        } else {
+            saveBtn.setAttribute("disabled", "true");
+        }
+    }
+
+    function setupFormValidation() {
+        const mandatoryIds = ["customerName", "projectName", "salesEngineer"];
+        mandatoryIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener("input", validateFormState);
+                el.addEventListener("change", validateFormState);
+            }
+        });
     }
 
     async function saveEnquiryRecord() {
+        // Validate manually before processing request
+        const customerName = document.getElementById("customerName").value.trim();
+        const projectName = document.getElementById("projectName").value.trim();
+        const salesEngineer = document.getElementById("salesEngineer").value.trim();
+
+        if (!customerName || !projectName || !salesEngineer) {
+            Swal.fire('Warning', 'Please fill mandatory cells before saving.', 'warning');
+            return;
+        }
+
         let entryTime = document.getElementById('entryDateTime').value;
         if (!entryTime) {
             const now = new Date();
@@ -578,16 +621,16 @@ function viewEnquiryDetails(event, id) {
         const payload = {
             id: document.getElementById('rowId').value,
             enquiryDate: document.getElementById('enquiryDate').value,
-            customerName: document.getElementById('customerName').value,
+            customerName: customerName,
             company: document.getElementById('company').value,
             contactPerson: document.getElementById('contactPerson').value,
             phone: document.getElementById('phone').value,
             email: document.getElementById('email').value,
-            projectName: document.getElementById('projectName').value,
+            projectName: projectName,
             projectLocation: document.getElementById('projectLocation').value,
             enquirySource: document.getElementById('enquirySource').value,
             scopeOfWork: document.getElementById('scopeOfWork').value,
-            salesEngineer: document.getElementById('salesEngineer').value,
+            salesEngineer: salesEngineer,
             estimator: document.getElementById('estimator').value,
             priority: document.getElementById('priority').value,
             tenderClosingDate: document.getElementById('tenderClosingDate').value,
@@ -646,6 +689,9 @@ function viewEnquiryDetails(event, id) {
         document.getElementById('enquiryDate').value = row[18] || '';
         document.getElementById('modalTitle').innerText = 'Edit Enquiry & Quotation';
         modalInstance.show();
+        
+        // Ensure button updates its enabled state when editing pre-filled rows
+        setTimeout(validateFormState, 100);
     }
 
     async function deleteEnquiry(id) {
@@ -676,7 +722,7 @@ function viewEnquiryDetails(event, id) {
         }
     }
 
-    function filterTable() {
+function filterTable() {
         const query = document.getElementById('globalSearch').value.toLowerCase();
         const statusVal = document.getElementById('statusFilter').value;
 
@@ -685,7 +731,31 @@ function viewEnquiryDetails(event, id) {
             const matchesStatus = statusVal === "" || row[16] === statusVal;
             return matchesSearch && matchesStatus;
         });
+
+        // Sort data so the latest date/entry appears at the top
+        filteredEnquiries.sort((a, b) => {
+            // Index 18 is Enquiry Date (DD-MM-YYYY), Index 19 is Entry Date & Time
+            let dateA = parseCustomDate(a[18] || a[19]);
+            let dateB = parseCustomDate(b[18] || b[19]);
+            return dateB - dateA; // Descending order (latest first)
+        });
+
         renderTable(filteredEnquiries);
+    }
+
+    // Helper function to safely parse your "DD-MM-YYYY" or timestamp format for correct sorting
+    function parseCustomDate(dateStr) {
+        if (!dateStr) return 0;
+        try {
+            // If it contains a time stamp like "DD-MM-YYYY HH:mm:ss"
+            let parts = dateStr.split(' ')[0].split('-');
+            if (parts.length === 3) {
+                return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime();
+            }
+        } catch (e) {
+            return 0;
+        }
+        return 0;
     }
 
     function toggleSelectAll(source) {
@@ -723,57 +793,6 @@ function viewEnquiryDetails(event, id) {
         XLSX.utils.book_append_sheet(wb, ws, "Filtered_Enquiries");
         XLSX.writeFile(wb, "Filtered_Enquiries_Report.xlsx");
     }
-
-    document.addEventListener("DOMContentLoaded", function () {
-  const saveBtn = document.getElementById("saveBtn");
-  
-  // Define mandatory field IDs based on your form fields marked with *
-  const mandatoryFields = [
-    document.getElementById("customerName"),
-    document.getElementById("projectName"),
-    document.getElementById("salesEngineer")
-  ];
-
-  function validateForm() {
-    let allFilled = true;
-    
-    mandatoryFields.forEach(field => {
-      if (!field || !field.value.trim()) {
-        allFilled = false;
-      }
-    });
-
-    if (allFilled) {
-      saveBtn.removeAttribute("disabled");
-      saveBtn.classList.remove("opacity-50", "cursor-not-allowed"); // Optional: clear disabled styling if any
-    } else {
-      saveBtn.setAttribute("disabled", "true");
-    }
-  }
-
-  // Listen for typing/changes in all fields
-  mandatoryFields.forEach(field => {
-    if (field) {
-      field.addEventListener("input", validateForm);
-      field.addEventListener("change", validateForm);
-    }
-  });
-
-  // Optional: Click handler to show an error message if someone tries to force-click it
-  saveBtn.addEventListener("click", function (e) {
-    let allFilled = true;
-    mandatoryFields.forEach(field => {
-      if (!field || !field.value.trim()) {
-        allFilled = false;
-      }
-    });
-
-    if (!allFilled) {
-      e.preventDefault();
-      alert("Please fill mandatory cells before saving.");
-    }
-  });
-});
 
     async function bulkDelete() {
         const selected = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => cb.value);
