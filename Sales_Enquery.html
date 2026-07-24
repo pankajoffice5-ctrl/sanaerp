@@ -256,7 +256,12 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Sales Engineer *</label>
-                            <input type="text" class="form-control" id="salesEngineer" required placeholder="Raja / Hariss">
+
+                            <select class="form-select" id="salesEngineer">
+                                  <option value="Raja">Raja</option>
+                                <option value="Haris">Haris</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Estimator</label>
@@ -281,8 +286,8 @@
                         <div class="col-md-4">
                             <label class="form-label">Quotation Status</label>
                             <select class="form-select" id="quotationStatus">
+                                  <option value="Pending">Pending</option>
                                 <option value="Draft">Draft</option>
-                                <option value="Pending">Pending</option>
                                 <option value="Sent">Sent</option>
                                 <option value="Approved">Approved</option>
                                 <option value="Received LPO">Received LPO</option>
