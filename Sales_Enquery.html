@@ -595,57 +595,56 @@
         });
     }
 
-    async function saveEnquiryRecord() {
-        // Validate manually before processing request
-        const customerName = document.getElementById("customerName").value.trim();
-        const projectName = document.getElementById("projectName").value.trim();
-        const salesEngineer = document.getElementById("salesEngineer").value.trim();
+async function saveEnquiryRecord() {
+    const customerName = document.getElementById("customerName").value.trim();
+    const projectName = document.getElementById("projectName").value.trim();
+    const salesEngineer = document.getElementById("salesEngineer").value.trim();
 
-        if (!customerName || !projectName || !salesEngineer) {
-            Swal.fire('Warning', 'Please fill mandatory cells before saving.', 'warning');
-            return;
-        }
-
-        let entryTime = document.getElementById('entryDateTime').value;
-        if (!entryTime) {
-            const now = new Date();
-            const dd = String(now.getDate()).padStart(2, '0');
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const yyyy = now.getFullYear();
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
-            entryTime = `${dd}-${mm}-${yyyy} ${hh}:${min}:${ss}`;
-        }
-
-        const payload = {
-            id: document.getElementById('rowId').value,
-            enquiryDate: document.getElementById('enquiryDate').value,
-            customerName: customerName,
-            company: document.getElementById('company').value,
-            contactPerson: document.getElementById('contactPerson').value,
-            phone: document.getElementById('phone').value,
-            email: document.getElementById('email').value,
-            projectName: projectName,
-            projectLocation: document.getElementById('projectLocation').value,
-            enquirySource: document.getElementById('enquirySource').value,
-            scopeOfWork: document.getElementById('scopeOfWork').value,
-            salesEngineer: salesEngineer,
-            estimator: document.getElementById('estimator').value,
-            priority: document.getElementById('priority').value,
-            tenderClosingDate: document.getElementById('tenderClosingDate').value,
-            quotationValue: document.getElementById('quotationValue').value,
-            quotationStatus: document.getElementById('quotationStatus').value,
-            remarks: document.getElementById('remarks').value,
-            entryDateTime: entryTime            
-        };
-
-        const action = payload.id ? 'updateEnquiry' : 'saveEnquiry';
-        await callApi(action, payload);
-        modalInstance.hide();
-        Swal.fire('Success', 'Enquiry saved successfully!', 'success');
-        loadAllData(false);
+    if (!customerName || !projectName || !salesEngineer) {
+        Swal.fire('Warning', 'Please fill mandatory cells before saving.', 'warning');
+        return;
     }
+
+    let entryTime = document.getElementById('entryDateTime').value;
+    if (!entryTime) {
+        const now = new Date();
+        const dd = String(now.getDate()).padStart(2, '0');
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const yyyy = now.getFullYear();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        entryTime = `${dd}-${mm}-${yyyy} ${hh}:${min}:${ss}`;
+    }
+
+    const payload = {
+        id: document.getElementById('rowId').value,
+        enquiryDate: document.getElementById('enquiryDate').value,
+        customerName: customerName,
+        company: document.getElementById('company').value,
+        contactPerson: document.getElementById('contactPerson').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        projectName: projectName,
+        projectLocation: document.getElementById('projectLocation').value,
+        enquirySource: document.getElementById('enquirySource').value,
+        scopeOfWork: document.getElementById('scopeOfWork').value,
+        salesEngineer: salesEngineer,
+        estimator: document.getElementById('estimator').value,
+        priority: document.getElementById('priority').value,
+        tenderClosingDate: document.getElementById('tenderClosingDate').value,
+        quotationValue: document.getElementById('quotationValue').value,
+        quotationStatus: document.getElementById('quotationStatus').value,
+        remarks: document.getElementById('remarks').value,
+        entryDateTime: entryTime            
+    };
+
+    const action = payload.id ? 'updateEnquiry' : 'saveEnquiry';
+    await callApi(action, payload);
+    modalInstance.hide();
+    Swal.fire('Success', 'Enquiry saved successfully!', 'success');
+    loadAllData(false);
+}
 
     async function editEnquiry(id) {
         const { value: password } = await Swal.fire({
