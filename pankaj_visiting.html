@@ -97,10 +97,10 @@
                     <i class="fa-solid fa-phone"></i>
                     <span>Call</span>
                 </a>
-                <button type="button" id="action-whatsapp" class="flex items-center justify-center space-x-2 py-3.5 px-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-semibold shadow-lg shadow-green-500/20 transition transform active:scale-95 text-sm cursor-pointer">
+                <a id="action-whatsapp" href="https://wa.me/message/OGS6BGRI2OG3O1" target="_blank" class="flex items-center justify-center space-x-2 py-3.5 px-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-semibold shadow-lg shadow-green-500/20 transition transform active:scale-95 text-sm">
                     <i class="fa-brands fa-whatsapp text-lg"></i>
                     <span>WhatsApp</span>
-                </button>
+                </a>
                 <a id="action-email" href="mailto:pankajoffice5@gmail.com" class="flex items-center justify-center space-x-2 py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold shadow-lg shadow-blue-500/20 transition transform active:scale-95 text-sm">
                     <i class="fa-solid fa-envelope"></i>
                     <span>Email</span>
@@ -174,14 +174,14 @@
             personName: "Pankaj Kumar",
             jobTitle: "Draftsman",
             phone: "+971522179535",
-            whatsapp: "971522179535",
+            whatsapp: "https://wa.me/message/OGS6BGRI2OG3O1",
             email: "pankajoffice5@gmail.com",
             website: "https://alsanaengineering.com/",
             officeAddress: "Industrial Area-11 Near Billaden Signal, Sharjah, UAE",
             googleMapsLink: "https://www.google.com/maps/@25.3015277,55.4301494,19z?entry=ttu",
             workingHours: "Mon - Fri: 9:00 AM - 6:00 PM",
             companyDescription: "All Kinds of Fabrication (Ms, SS & Aluminum), Trench Cover Plate Install, Turning & Machining works etc.",
-            cardUrl: "https://sanaerp.netlify.app/pankaj_visiting"
+            cardUrl: "https://wa.me/message/OGS6BGRI2OG3O1"
         };
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -212,16 +212,6 @@
         }
 
         function setupInteractions() {
-            document.getElementById("action-whatsapp").addEventListener("click", () => {
-                let cleanDigits = CONFIG.whatsapp.replace(/[^0-9]/g, "");
-                if (cleanDigits.length === 9 && cleanDigits.startsWith('5')) {
-                    cleanDigits = '971' + cleanDigits;
-                } else if (cleanDigits.length === 10 && cleanDigits.startsWith('0')) {
-                    cleanDigits = '971' + cleanDigits.substring(1);
-                }
-                window.open(`https://wa.me/${cleanDigits}`, '_blank');
-            });
-
             document.getElementById("btn-save-vcf").addEventListener("click", downloadVCF);
 
             document.querySelectorAll(".copy-btn").forEach(btn => {
@@ -256,7 +246,6 @@
                 `ORG:${CONFIG.companyName}`,
                 `TITLE:${CONFIG.jobTitle}`,
                 `TEL;TYPE=WORK,VOICE:${CONFIG.phone}`,
-                `TEL;TYPE=CELL,WHATSAPP:${CONFIG.whatsapp}`,
                 `EMAIL;TYPE=INTERNET:${CONFIG.email}`,
                 `URL:${CONFIG.website}`,
                 `ADR;TYPE=WORK:;;${CONFIG.officeAddress};;;;`,
