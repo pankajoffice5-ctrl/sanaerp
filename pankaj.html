@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Digital Visiting Card</title>
+    <!-- Tailwind CSS CDN for utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QRCode Generator Library (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .navbar-brand-logo {
+            height: 32px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.2));
+        }
+        .card-header-logo {
+            height: 36px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0px 1px 3px rgba(0,0,0,0.3));
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col justify-between transition-colors duration-300 font-sans">
+
+    <!-- Top Bar with Logo & Dark Mode Toggle -->
+    <header class="w-full p-4 flex justify-between items-center max-w-md mx-auto">
+        <div class="flex items-center space-x-2">
+            <img id="LMELOGO" src="sana_logo.webp" alt="Sana Logo" class="navbar-brand-logo">
+        </div>
+        <button id="theme-toggle" aria-label="Toggle Dark Mode" class="p-2 rounded-full bg-gray-200 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:scale-105 transition">
+            <i class="fa-solid fa-moon dark:hidden"></i>
+            <i class="fa-solid fa-sun hidden dark:inline"></i>
+        </button>
+    </header>
+
+    <!-- Main Container (Mobile First, Max-width MD) -->
+    <main class="w-full max-w-md mx-auto p-4 flex-grow flex flex-col justify-center relative">
+
+        <!-- DIGITAL VISITING CARD VIEW -->
+        <section id="view-card" class="space-y-6 animate-fade-in pb-16">
+            <!-- Card Header Profile Box -->
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-slate-700">
+                <!-- Cover Gradient Banner -->
+                <div class="h-32 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative flex justify-between items-start p-4">
+                    <!-- Logo Placed in Top-Left Red Box Area -->
+                    <img src="sana_logo.webp" alt="Sana Logo" class="card-header-logo bg-white/10 backdrop-blur-md p-1 rounded-lg">
+                    
+                    <div class="bg-black/20 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-medium flex items-center space-x-1">
+                        <span id="card-company-name-badge">Al Sana Engg/Turning</span>
+                    </div>
+                </div>
+                <!-- Profile Details -->
+                <div class="px-6 pb-6 pt-0 relative text-center">
+                    <div class="relative -mt-16 mb-3 inline-block">
+                        <img id="card-profile-photo" src="pankaj.jpeg" alt="Profile Photo" class="w-28 h-28 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-lg mx-auto bg-gray-200">
+                    </div>
+                    <h2 id="card-person-name" class="text-xl font-bold">Pankaj Kumar</h2>
+                    <p id="card-job-title" class="text-sm font-medium text-brand-600 dark:text-brand-400 mt-0.5">
+                                    Mechanical & Structural Designer • Estimator • Web Application Developer</p>
+                    <p id="card-company-full" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Al Sana Engg/Turning</p>
+                    <p id="card-description" class="text-xs text-gray-600 dark:text-gray-300 mt-3 px-2 leading-relaxed">All Kinds of Fabrication (Ms, SS & Aluminum), Turning & Machining works etc.</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons Grid -->
+            <div class="grid grid-cols-2 gap-3">
+                <a id="action-call" href="tel:+971522179535" class="flex items-center justify-center space-x-2 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-semibold shadow-lg shadow-emerald-500/20 transition transform active:scale-95 text-sm">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>Call</span>
+                </a>
+                <a id="action-whatsapp" href="https://wa.me/message/OGS6BGRI2OG3O1" target="_blank" class="flex items-center justify-center space-x-2 py-3.5 px-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-semibold shadow-lg shadow-green-500/20 transition transform active:scale-95 text-sm">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>WhatsApp</span>
+                </a>
+                <a id="action-email" href="mailto:pankajoffice5@gmail.com" class="flex items-center justify-center space-x-2 py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold shadow-lg shadow-blue-500/20 transition transform active:scale-95 text-sm">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>Email</span>
+                </a>
+                <a id="action-website" href="https://alsanaengineering.com/" target="_blank" class="flex items-center justify-center space-x-2 py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-semibold shadow-lg shadow-indigo-500/20 transition transform active:scale-95 text-sm">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Website</span>
+                </a>
+            </div>
+
+            <!-- Secondary Actions: Location & Save Contact -->
+            <div class="space-y-3">
+                <a id="action-location" href="https://maps.app.goo.gl/H7iivKuKrdtWiG5h7" target="_blank" class="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 transition">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 flex items-center justify-center">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-xs font-semibold text-gray-400 uppercase">Office Location</p>
+                            <p id="card-address" class="text-sm font-medium text-gray-800 dark:text-gray-200 line-clamp-1">Industrial Area-11 Near Billaden Signal, Sharjah, UAE</p>
+                        </div>
+                    </div>
+                    <button data-copy-target="card-address" class="copy-btn text-gray-400 hover:text-brand-600 p-2" title="Copy Address">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </a>
+
+                <!-- Working Hours Info Block -->
+                <div class="flex items-center p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center mr-3">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-gray-400 uppercase">Working Hours</p>
+                        <p id="card-hours" class="text-sm font-medium text-gray-800 dark:text-gray-200">Mon - Fri: 9:00 AM - 6:00 PM</p>
+                    </div>
+                </div>
+
+                <!-- Save Contact Full Width Button -->
+                <div class="pt-2">
+                    <button id="btn-save-vcf" class="w-full py-3.5 px-4 bg-gray-800 dark:bg-slate-700 hover:bg-gray-900 dark:hover:bg-slate-600 text-white font-semibold rounded-2xl shadow transition flex items-center justify-center space-x-2 text-sm">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Save Contact</span>
+                    </button>
+                </div>
+
+                <!-- QR Code Box Section -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-700 text-center space-y-3 mt-4">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Scan to Share Card</p>
+                    <div id="qrcode" class="flex justify-center p-2 bg-white rounded-xl inline-block mx-auto"></div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Point your phone camera to open this digital card</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-4 text-center text-xs text-gray-400 max-w-md mx-auto">
+        <p id="footer-text">&copy; 2026 Al Sana Engg/Turning. All Rights Reserved</p>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-xl shadow-xl text-xs font-medium opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+        Copied!
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        const CONFIG = {
+            companyName: "Al Sana Engg/Turning",
+            personName: "Pankaj Kumar",
+            jobTitle: "Designer",
+            phone: "+971522179535",
+            whatsapp: "https://wa.me/message/OGS6BGRI2OG3O1",
+            email: "Estimation2@alsanaengg.ae",
+            website: "https://alsanaengineering.com/",
+            officeAddress: "Industrial Area-11 Near Billaden Signal, Sharjah, UAE",
+            googleMapsLink: "https://www.google.com/maps/@25.3015277,55.4301494,19z?entry=ttu",
+            workingHours: "Mon - Fri: 9:00 AM - 6:00 PM",
+            companyDescription: "All Kinds of Fabrication (Ms, SS & Aluminum), Trench Cover Plate Install, Turning & Machining works etc.",
+            cardUrl: "https://wa.me/message/OGS6BGRI2OG3O1"
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initTheme();
+            setupInteractions();
+            generateQRCode();
+        });
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem("theme");
+            const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            
+            if (savedTheme === "dark" || (!savedTheme && systemPrefersDark)) {
+                document.documentElement.classList.add("dark");
+            } else {
+                document.documentElement.classList.remove("dark");
+            }
+
+            document.getElementById("theme-toggle").addEventListener("click", () => {
+                if (document.documentElement.classList.contains("dark")) {
+                    document.documentElement.classList.remove("dark");
+                    localStorage.setItem("theme", "light");
+                } else {
+                    document.documentElement.classList.add("dark");
+                    localStorage.setItem("theme", "dark");
+                }
+            });
+        }
+
+        function setupInteractions() {
+            document.getElementById("btn-save-vcf").addEventListener("click", downloadVCF);
+
+            document.querySelectorAll(".copy-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const targetId = btn.getAttribute("data-copy-target");
+                    const textToCopy = document.getElementById(targetId).innerText;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        showToast("Copied to clipboard!");
+                    });
+                });
+            });
+        }
+
+        function generateQRCode() {
+            const qrContainer = document.getElementById("qrcode");
+            qrContainer.innerHTML = "";
+            new QRCode(qrContainer, {
+                text: CONFIG.cardUrl,
+                width: 128,
+                height: 128,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function downloadVCF() {
+            const vcfData = [
+                "BEGIN:VCARD",
+                "VERSION:3.0",
+                `FN:${CONFIG.personName}`,
+                `ORG:${CONFIG.companyName}`,
+                `TITLE:${CONFIG.jobTitle}`,
+                `TEL;TYPE=WORK,VOICE:${CONFIG.phone}`,
+                `EMAIL;TYPE=INTERNET:${CONFIG.email}`,
+                `URL:${CONFIG.website}`,
+                `ADR;TYPE=WORK:;;${CONFIG.officeAddress};;;;`,
+                `NOTE:${CONFIG.companyDescription}`,
+                "END:VCARD"
+            ].join("\n");
+
+            const blob = new Blob([vcfData], { type: "text/vcard;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "Pankaj_al_sana.vcf");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.classList.remove("opacity-0", "pointer-events-none");
+            setTimeout(() => {
+                toast.classList.add("opacity-0", "pointer-events-none");
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
