@@ -13,6 +13,7 @@
     .mat-group { margin-top: 15px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; background: #fff; position: relative; }
     .mat-title { font-size: 15px; font-weight: 800; color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
     .btn { padding: 10px 25px; border-radius: 6px; border: none; cursor: pointer; font-weight: 700; color: white; background: var(--accent); width: 100%; margin-top: 10px; font-size: 14px; }
+    .btn-excel { background: #16a34a; }
     .bar-row { height: 26px; background: #e2e8f0; border-radius: 4px; display: flex; margin-top: 8px; overflow: hidden; border: 1px solid #cbd5e1; }
     .cut-segment { border-right: 1px solid white; background: var(--accent); color: white; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
     .sheet-container { display: inline-block; margin-right: 20px; margin-bottom: 20px; vertical-align: top; }
@@ -38,6 +39,7 @@
     <strong>PASTE EXCEL DATA (Material, D1, D2, THK, Length, Qty)</strong>
     <textarea id="xlInput" placeholder="Paste rows here..."></textarea>
     <button class="btn" onclick="processAll()">🚀 GENERATE OPTIMIZED NESTING</button>
+    <button class="btn btn-excel" onclick="downloadBOQ()">📥 DOWNLOAD BOQ (EXCEL FORMAT)</button>
   </div>
 
   <div class="section-header" style="background: var(--accent);">
@@ -86,7 +88,7 @@ function processAll() {
 function prepareLinearGroups() {
     linearGroups = {};
     parsedData.filter(d => !d.mat.includes('PLATE')).forEach(d => {
-        const key = `${d.mat} (Size: ${d.d1} THK: ${d.thk}mm)`;
+        const key = `${d.mat} (Size: ${d.d1}x${d.d2} THK: ${d.thk}mm)`;
         if (!linearGroups[key]) {
             linearGroups[key] = { items: [], stock: 6000 };
         }
@@ -170,7 +172,7 @@ function runPlates() {
 
     const groups = {};
     parsedData.filter(d => d.mat.includes('PLATE')).forEach(d => {
-        const key = `PLATE THICKNESS: ${d.thk}mm`;
+        const key = `PLATE THICKNESS: ${d.thk}mm (Size: ${d.d1}x${d.d2})`;
         if (!groups[key]) groups[key] = [];
         for(let i=0; i<d.qty; i++) groups[key].push({ w: d.d1, l: d.d2 });
     });
@@ -239,6 +241,123 @@ function runPlates() {
             lastGroup.appendChild(wrap);
         });
     }
+}
+
+function downloadBOQ() {
+    if (parsedData.length === 0) {
+        processAll();
+        if (parsedData.length === 0) {
+            alert("Please paste valid data first before downloading BOQ.");
+            return;
+        }
+    }
+
+    let csvRows = [];
+    csvRows.push(["Type", "Material / Description", "Stock Size", "Procure Quantity", "Scrap %"]);
+
+    // Linear items summary
+    for (const [key, data] of Object.entries(linearGroups)) {
+        let cuts = [];
+        let totalUsedLength = 0;
+        const stock = data.stock;
+
+        data.items.forEach(d => {
+            totalUsedLength += (d.len * d.qty);
+            if (d.len > stock) {
+                let fullBars = Math.floor(d.len / stock);
+                let remainder = d.len % stock;
+                for(let q=0; q < d.qty; q++) {
+                    for(let f=0; f < fullBars; f++) cuts.push(stock);
+                    if(remainder > 0) cuts.push(remainder);
+                }
+            } else {
+                for(let i=0; i < d.qty; i++) cuts.push(d.len);
+            }
+        });
+
+        cuts.sort((a, b) => b - a);
+        let bars = [];
+        cuts.forEach(c => {
+            let fit = bars.find(b => (b.used + c) <= stock);
+            if (fit) { fit.parts.push(c); fit.used += c; }
+            else { bars.push({ parts: [c], used: c }); }
+        });
+
+        const totalStockLength = bars.length * stock;
+        const scrapPercent = totalStockLength > 0 ? (((totalStockLength - totalUsedLength) / totalStockLength) * 100).toFixed(2) : 0;
+
+        csvRows.push([
+            "Linear Profile",
+            `"${key}"`,
+            stock + " mm",
+            bars.length + " Bars",
+            scrapPercent + "%"
+        ]);
+    }
+
+    // Plate items summary
+    const sW = parseFloat(document.getElementById('sw').value);
+    const sL = parseFloat(document.getElementById('sl').value);
+    const userKerf = parseFloat(document.getElementById('kerf').value) || 0;
+    const displayW = Math.max(sW, sL);
+    const displayL = Math.min(sW, sL);
+    const sheetArea = displayW * displayL;
+
+    const groups = {};
+    parsedData.filter(d => d.mat.includes('PLATE')).forEach(d => {
+        const key = `PLATE THICKNESS: ${d.thk}mm (Size: ${d.d1}x${d.d2})`;
+        if (!groups[key]) groups[key] = [];
+        for(let i=0; i<d.qty; i++) groups[key].push({ w: d.d1, l: d.d2 });
+    });
+
+    for (const [title, parts] of Object.entries(groups)) {
+        let totalPartArea = 0;
+        parts.forEach(p => totalPartArea += (p.w * p.l));
+        parts.sort((a,b) => (b.w * b.l) - (a.w * a.l));
+        let sheets = [{ y: 0, shelves: [], items: [] }];
+        
+        parts.forEach(p => {
+            let placed = false;
+            let pw = Math.max(p.w, p.l);
+            let pl = Math.min(p.w, p.l);
+            
+            for (let s of sheets) {
+                for (let sh of s.shelves) {
+                    if (pw <= sh.fw && pl <= sh.h) {
+                        s.items.push({ x: displayW - sh.fw, y: sh.y, w: pw, l: pl });
+                        sh.fw -= (pw + userKerf); placed = true; break;
+                    }
+                }
+                if (placed) break;
+                if (s.y + pl <= displayL) {
+                    s.shelves.push({ y: s.y, h: pl, fw: displayW - (pw + userKerf) });
+                    s.items.push({ x: 0, y: s.y, w: pw, l: pl });
+                    s.y += (pl + userKerf); placed = true; break;
+                }
+            }
+            if (!placed) sheets.push({ y: pl + userKerf, shelves: [{ y: 0, h: pl, fw: displayW - (pw + userKerf) }], items: [{ x: 0, y: 0, w: pw, l: pl }] });
+        });
+
+        const totalSheetArea = sheets.length * sheetArea;
+        const scrapPercent = totalSheetArea > 0 ? (((totalSheetArea - totalPartArea) / totalSheetArea) * 100).toFixed(2) : 0;
+
+        csvRows.push([
+            "Plate",
+            `"${title}"`,
+            displayW + "x" + displayL + " mm",
+            sheets.length + " Sheets",
+            scrapPercent + "%"
+        ]);
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8," + csvRows.map(e => e.join(",")).join("\n");
+    let encodedUri = encodeURI(csvContent);
+    let link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "BOQ_Nesting_Summary.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 </script>
 </body>
