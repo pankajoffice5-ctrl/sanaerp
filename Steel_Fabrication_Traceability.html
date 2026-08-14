@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Steel Fabrication & Erection - Tag & Tracking</title>
+<title>Steel Fabrication & Erection - Google Sheets Sync</title>
 
 <!-- QR generator -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -28,9 +28,13 @@ body{
     background:linear-gradient(135deg,#0d2f4a,#1769aa);
     color:white;
     padding:18px 22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 }
 .app-header h1{margin:0;font-size:24px}
 .app-header p{margin:5px 0 0;font-size:13px;opacity:.9}
+#syncStatus{font-size:12px;background:rgba(255,255,255,0.2);padding:6px 12px;border-radius:4px;}
 
 .toolbar{
     background:#fff;
@@ -249,13 +253,8 @@ th{background:#edf3f7}
     text-align:center;
     gap:1mm;
 }
-.status-box{
-    min-width:0;
-}
-.status-label{
-    font-size:2.3mm;
-    font-weight:900;
-}
+.status-box{min-width:0;}
+.status-label{font-size:2.3mm;font-weight:900;}
 .status-icon{
     width:6mm;
     height:6mm;
@@ -268,11 +267,7 @@ th{background:#edf3f7}
     font-size:3.3mm;
     font-weight:900;
 }
-.status-value{
-    font-size:2.25mm;
-    font-weight:700;
-    line-height:1.1;
-}
+.status-value{font-size:2.25mm;font-weight:700;line-height:1.1;}
 .status-green .status-icon{background:#16834a}
 .status-blue .status-icon{background:#1769aa}
 .status-purple .status-icon{background:#6546b8}
@@ -315,32 +310,12 @@ th{background:#edf3f7}
 
 /* PRINT */
 @media print{
-    @page{
-        size:A4 portrait;
-        margin:0;
-    }
-    html,body{
-        width:210mm;
-        height:297mm;
-        margin:0;
-        padding:0;
-        background:#fff;
-    }
+    @page{size:A4 portrait;margin:0;}
+    html,body{width:210mm;height:297mm;margin:0;padding:0;background:#fff;}
     .no-print{display:none!important}
-    #printArea{
-        display:block!important;
-        width:210mm;
-        height:297mm;
-        margin:0;
-        padding:0;
-    }
-    .a4-sheet{
-        page-break-after:always;
-        margin:0;
-    }
-    .steel-tag{
-        page-break-inside:avoid;
-    }
+    #printArea{display:block!important;width:210mm;height:297mm;margin:0;padding:0;}
+    .a4-sheet{page-break-after:always;margin:0;}
+    .steel-tag{page-break-inside:avoid;}
 }
 </style>
 </head>
@@ -348,8 +323,11 @@ th{background:#edf3f7}
 <body>
 
 <div class="app-header no-print">
-    <h1>Steel Fabrication & Erection Traceability</h1>
-    <p>Part Identification • QR Tag • Fabrication • QC • Loading • Site • Erection</p>
+    <div>
+        <h1>Steel Fabrication & Erection Traceability</h1>
+        <p>Part Identification • QR Tag • Google Sheets Sync</p>
+    </div>
+    <div id="syncStatus">Connecting to Cloud...</div>
 </div>
 
 <div class="toolbar no-print">
@@ -357,6 +335,7 @@ th{background:#edf3f7}
     <button onclick="showSection('parts')">Part Tracking</button>
     <button onclick="showSection('tags')">Tag Generator</button>
     <button onclick="showSection('lookup')">QR Lookup</button>
+    <button onclick="loadPartsFromCloud()">Refresh Data</button>
     <button class="secondary" onclick="exportCSV()">Export CSV</button>
 
     <label class="file-btn">
@@ -439,12 +418,7 @@ th{background:#edf3f7}
 
 <section id="tags" class="panel hidden">
     <h2>Tag Generator</h2>
-
-    <p>
-        <b>A4 = 4 A6 tags.</b>
-        The tag features Drawing and Description fields in a clean layout.
-    </p>
-
+    <p><b>A4 = 4 A6 tags.</b></p>
     <input id="tagSearch" placeholder="Search Drawing..." oninput="renderTagList()">
 
     <div class="table-wrap" style="margin-top:12px">
@@ -472,13 +446,10 @@ th{background:#edf3f7}
 
 <section id="lookup" class="panel hidden">
     <h2>QR Lookup</h2>
-    <p>Scan the QR with your phone and enter the Drawing here, or paste:</p>
-    <p><b>STEELTAG|obs-1</b></p>
-
-    <input id="lookupInput" placeholder="Drawing or STEELTAG|Drawing">
+    <p>Scan the QR with your phone or enter the Drawing below:</p>
+    <input id="lookupInput" placeholder="Drawing number">
     <br><br>
     <button onclick="lookupPart()">Find Part</button>
-
     <div id="lookupResult" style="margin-top:15px"></div>
 </section>
 
@@ -487,80 +458,83 @@ th{background:#edf3f7}
 <div id="printArea"></div>
 
 <script>
-const DB_NAME = "SteelFabricationDB";
-const STORE_NAME = "parts";
-let db = null;
+// REPLACE WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzhmFjsqI_S2378TvCwc4NMnI5KU5xJRNbkhRfNemFwk_-zP1m9-SCCTHthsKPSYrmu/exec";
+
 let parts = [];
 let editingId = null;
 
-function initDB(){
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, 1);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-            db = request.result;
-            resolve(db);
-        };
-        request.onupgradeneeded = (event) => {
-            const database = event.target.result;
-            if(!database.objectStoreNames.contains(STORE_NAME)){
-                database.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
-            }
-        };
-    });
+function setSyncStatus(text, color="#16834a"){
+    const el = document.getElementById("syncStatus");
+    if(el){
+        el.innerText = text;
+        el.style.background = color;
+    }
 }
 
-function loadPartsFromDB(){
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, "readonly");
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.getAll();
-        request.onsuccess = () => {
-            parts = request.result;
-            if(parts.length === 0){
-                // Add initial default record if empty
-                const defaultItem = {
-                    Project:"Worrier Group",
-                    Drawing:"obs-1",
-                    Description:"Obstacle-1",
-                    Fabrication:"Not Started",
-                    QC:"Passed",
-                    Loading:"Ready",
-                    Erection:"Pending",
-                    ErectionDate:"",
-                    CustomLink:""
-                };
-                const addTx = db.transaction(STORE_NAME, "readwrite");
-                addTx.objectStore(STORE_NAME).add(defaultItem);
-                addTx.oncomplete = () => {
-                    loadPartsFromDB().then(resolve).catch(reject);
-                };
-            } else {
-                resolve(parts);
-            }
-        };
-        request.onerror = () => reject(request.error);
-    });
+async function loadPartsFromCloud(){
+    if(!WEB_APP_URL || WEB_APP_URL.includes("YOUR_GOOGLE_APPS_SCRIPT")){
+        setSyncStatus("Setup Apps Script URL", "#b63a32");
+        return;
+    }
+    setSyncStatus("Syncing...");
+    try {
+        const response = await fetch(WEB_APP_URL);
+        const result = await response.json();
+        if(result.status === "success"){
+            parts = result.data.map(item => ({
+                ...item,
+                id: item.id ? String(item.id) : String(Math.random())
+            }));
+            setSyncStatus("Synced with Google Sheet");
+            renderAll();
+        } else {
+            setSyncStatus("Sync Error", "#b63a32");
+        }
+    } catch(err) {
+        console.error(err);
+        setSyncStatus("Offline / Network Error", "#b63a32");
+    }
 }
 
-function savePartToDB(p){
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, "readwrite");
-        const store = transaction.objectStore(STORE_NAME);
-        const request = editingId !== null ? store.put({ ...p, id: editingId }) : store.add(p);
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+async function savePartToCloud(partData){
+    setSyncStatus("Saving to Sheet...");
+    try {
+        const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "save", data: partData })
+        });
+        const result = await response.json();
+        if(result.status === "success"){
+            setSyncStatus("Saved Successfully");
+            await loadPartsFromCloud();
+        } else {
+            setSyncStatus("Save Failed", "#b63a32");
+        }
+    } catch(err) {
+        console.error(err);
+        setSyncStatus("Save Error", "#b63a32");
+    }
 }
 
-function deletePartFromDB(id){
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, "readwrite");
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.delete(id);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
+async function deletePartFromCloud(partId){
+    setSyncStatus("Deleting...");
+    try {
+        const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "delete", id: partId })
+        });
+        const result = await response.json();
+        if(result.status === "success"){
+            setSyncStatus("Deleted");
+            await loadPartsFromCloud();
+        } else {
+            setSyncStatus("Delete Failed", "#b63a32");
+        }
+    } catch(err) {
+        console.error(err);
+        setSyncStatus("Delete Error", "#b63a32");
+    }
 }
 
 function esc(v){
@@ -577,6 +551,7 @@ function showSection(id){
 
 function getForm(){
     return {
+        id: editingId ? editingId : "",
         Project: project.value,
         Drawing: drawing.value,
         Description: description.value,
@@ -603,50 +578,26 @@ function fillForm(p){
 
 async function savePart(){
     const p = getForm();
-
     if(!p.Drawing){
         alert("Drawing is required.");
         return;
     }
-
-    const duplicate = parts.find(x => x.Drawing.toLowerCase() === p.Drawing.toLowerCase() && x.id !== editingId);
-
-    if(editingId === null && duplicate){
-        alert("This Drawing already exists.");
-        return;
-    }
-
-    try {
-        await savePartToDB(p);
-        await loadPartsFromDB();
-        clearForm();
-        renderAll();
-        alert("Part saved successfully.");
-    } catch(err) {
-        console.error(err);
-        alert("Error saving part.");
-    }
+    await savePartToCloud(p);
+    clearForm();
 }
 
 function editPart(id){
-    const p = parts.find(x => x.id === id);
+    const p = parts.find(x => String(x.id) === String(id));
     if(p){
-        editingId = id;
+        editingId = p.id;
         fillForm(p);
         showSection("parts");
     }
 }
 
 async function deletePart(id){
-    if(confirm("Delete this part?")){
-        try {
-            await deletePartFromDB(id);
-            await loadPartsFromDB();
-            renderAll();
-        } catch(err) {
-            console.error(err);
-            alert("Error deleting part.");
-        }
+    if(confirm("Delete this part from Google Sheets?")){
+        await deletePartFromCloud(id);
     }
 }
 
@@ -678,8 +629,8 @@ function renderParts(){
             <td class="${statusClass(p.Erection)}">${esc(p.Erection)}</td>
             <td>${esc(p.CustomLink)}</td>
             <td>
-                <button onclick="editPart(${p.id})">Edit</button>
-                <button class="danger" onclick="deletePart(${p.id})">Delete</button>
+                <button onclick="editPart('${p.id}')">Edit</button>
+                <button class="danger" onclick="deletePart('${p.id}')">Delete</button>
             </td>
         </tr>
     `).join("");
@@ -704,7 +655,6 @@ function renderDashboard(){
 
 function renderTagList(){
     const q = (tagSearch.value||"").toLowerCase();
-
     tagTable.innerHTML = parts
         .filter(p => JSON.stringify(p).toLowerCase().includes(q))
         .map(p => `
@@ -736,7 +686,6 @@ function makeTag(p){
                 <tr><td>DRAWING</td><td>${esc(p.Drawing)}</td></tr>
                 <tr><td>DESCRIPTION</td><td>${esc(p.Description)}</td></tr>
             </table>
-
             <div class="tag-qr"></div>
         </div>
 
@@ -746,19 +695,16 @@ function makeTag(p){
                 <div class="status-icon">${p.Fabrication==="Complete"?"✓":"!"}</div>
                 <div class="status-value">${esc(p.Fabrication)}</div>
             </div>
-
             <div class="status-box status-blue">
                 <div class="status-label">QC:</div>
                 <div class="status-icon">${p.QC==="Passed"?"✓":"!"}</div>
                 <div class="status-value">${esc(p.QC)}</div>
             </div>
-
             <div class="status-box status-purple">
                 <div class="status-label">LOAD:</div>
                 <div class="status-icon">${p.Loading==="Loaded"?"✓":"!"}</div>
                 <div class="status-value">${esc(p.Loading)}</div>
             </div>
-
             <div class="status-box status-orange">
                 <div class="status-label">ERECT:</div>
                 <div class="status-icon">${p.Erection==="Erected"?"✓":"!"}</div>
@@ -768,7 +714,6 @@ function makeTag(p){
     `;
 
     const qrBox = tag.querySelector(".tag-qr");
-
     const targetUrl = p.CustomLink && p.CustomLink.trim() !== "" 
         ? p.CustomLink.trim() 
         : `https://esmartcalc.netlify.app/?drawing=${encodeURIComponent(p.Drawing)}`;
@@ -784,7 +729,7 @@ function makeTag(p){
 }
 
 function selectedIds(){
-    return [...document.querySelectorAll(".tagPick:checked")].map(x => Number(x.value));
+    return [...document.querySelectorAll(".tagPick:checked")].map(x => x.value);
 }
 
 function selectAllTags(){
@@ -798,7 +743,6 @@ function clearTagSelection(){
 function buildSheets(selected){
     const area = document.createElement("div");
     let sheet = null;
-
     selected.forEach((p, i) => {
         if(i % 4 === 0){
             sheet = document.createElement("div");
@@ -807,26 +751,18 @@ function buildSheets(selected){
         }
         sheet.appendChild(makeTag(p));
     });
-
     return area;
 }
 
 function previewTags(){
     const ids = selectedIds();
-
-    if(!ids.length){
-        alert("Select at least one tag.");
-        return;
-    }
-
+    if(!ids.length){ alert("Select at least one tag."); return; }
     const wrap = document.createElement("div");
     wrap.className = "preview-wrap";
-
     ids.forEach(id => {
-        const p = parts.find(x => x.id === id);
+        const p = parts.find(x => String(x.id) === String(id));
         if(p) wrap.appendChild(makeTag(p));
     });
-
     preview.innerHTML = "";
     preview.appendChild(wrap);
     preview.scrollIntoView({behavior:"smooth"});
@@ -834,24 +770,15 @@ function previewTags(){
 
 function printSelectedTags(){
     const ids = selectedIds();
-
-    if(!ids.length){
-        alert("Select at least one tag.");
-        return;
-    }
-
-    const selected = ids.map(id => parts.find(x => x.id === id)).filter(Boolean);
-
+    if(!ids.length){ alert("Select at least one tag."); return; }
+    const selected = ids.map(id => parts.find(x => String(x.id) === String(id))).filter(Boolean);
     printArea.innerHTML = "";
     printArea.appendChild(buildSheets(selected));
-
     setTimeout(() => window.print(), 250);
 }
 
 function lookupPart(){
     let id = lookupInput.value.trim();
-    id = id.replace(/^STEELTAG\|/i, "");
-
     const p = parts.find(x => x.Drawing.toLowerCase() === id.toLowerCase());
 
     if(!p){
@@ -870,30 +797,21 @@ function lookupPart(){
             <p><b>QC:</b> ${esc(p.QC)}</p>
             <p><b>Loading:</b> ${esc(p.Loading)}</p>
             <p><b>Erection:</b> ${esc(p.Erection)}</p>
-
-            <button onclick="markErected(${p.id})">Mark Erected</button>
+            <button onclick="markErected('${p.id}')">Mark Erected</button>
         </div>
     `;
 }
 
 async function markErected(id){
-    const p = parts.find(x => x.id === id);
-
+    const p = parts.find(x => String(x.id) === String(id));
     if(p){
         p.Erection = "Erected";
         p.ErectionDate = new Date().toISOString().slice(0,10);
-        try {
-            editingId = p.id;
-            await savePartToDB(p);
-            editingId = null;
-            await loadPartsFromDB();
-            lookupInput.value = p.Drawing;
-            lookupPart();
-            renderAll();
-        } catch(err) {
-            console.error(err);
-            alert("Error updating status.");
-        }
+        editingId = p.id;
+        await savePartToCloud(p);
+        editingId = null;
+        lookupInput.value = p.Drawing;
+        lookupPart();
     }
 }
 
@@ -902,16 +820,11 @@ function csvCell(v){
 }
 
 function exportCSV(){
-    const columns = [
-        "Project","Drawing","Description",
-        "Fabrication","QC","Loading","Erection","ErectionDate","CustomLink"
-    ];
-
+    const columns = ["Project","Drawing","Description","Fabrication","QC","Loading","Erection","ErectionDate","CustomLink"];
     const csv = [
         columns.join(","),
         ...parts.map(p => columns.map(c => csvCell(p[c])).join(","))
     ].join("\n");
-
     const blob = new Blob([csv],{type:"text/csv;charset=utf-8"});
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -922,78 +835,41 @@ function exportCSV(){
 function parseCSV(text){
     const rows = [];
     let row = [], cell = "", quoted = false;
-
     for(let i = 0; i < text.length; i++){
         const c = text[i];
         const n = text[i+1];
-
-        if(c === '"' && quoted && n === '"'){
-            cell += '"';
-            i++;
-        }else if(c === '"'){
-            quoted = !quoted;
-        }else if(c === "," && !quoted){
-            row.push(cell);
-            cell = "";
-        }else if((c === "\n" || c === "\r") && !quoted){
+        if(c === '"' && quoted && n === '"'){ cell += '"'; i++; }
+        else if(c === '"'){ quoted = !quoted; }
+        else if(c === "," && !quoted){ row.push(cell); cell = ""; }
+        else if((c === "\n" || c === "\r") && !quoted){
             if(c === "\r" && n === "\n") i++;
-            row.push(cell);
-            rows.push(row);
-            row = [];
-            cell = "";
-        }else{
-            cell += c;
-        }
+            row.push(cell); rows.push(row); row = []; cell = "";
+        } else { cell += c; }
     }
-
-    if(cell.length || row.length){
-        row.push(cell);
-        rows.push(row);
-    }
-
+    if(cell.length || row.length){ row.push(cell); rows.push(row); }
     return rows;
 }
 
-function importCSV(event){
+async function importCSV(event){
     const file = event.target.files[0];
     if(!file) return;
-
     const reader = new FileReader();
-
     reader.onload = async function(){
         const rows = parseCSV(reader.result);
         if(rows.length < 2) return;
-
         const headers = rows.shift();
+        const imported = rows.filter(r => r.some(v => v.trim() !== "")).map(r => {
+            const p = {};
+            headers.forEach((h, i) => p[h] = r[i] || "");
+            delete p.id;
+            return p;
+        });
 
-        const imported = rows
-            .filter(r => r.some(v => v.trim() !== ""))
-            .map(r => {
-                const p = {};
-                headers.forEach((h, i) => p[h] = r[i] || "");
-                delete p.id; // ensure fresh IDs
-                return p;
-            });
-
-        try {
-            const transaction = db.transaction(STORE_NAME, "readwrite");
-            const store = transaction.objectStore(STORE_NAME);
-            
-            for(const item of imported){
-                store.add(item);
-            }
-
-            transaction.oncomplete = async () => {
-                await loadPartsFromDB();
-                renderAll();
-                alert(imported.length + " parts imported.");
-            };
-        } catch(err) {
-            console.error(err);
-            alert("Error importing CSV.");
+        for(const item of imported){
+            await savePartToCloud(item);
         }
+        alert(imported.length + " parts imported to Google Sheets.");
     };
-
     reader.readAsText(file);
 }
 
@@ -1003,23 +879,16 @@ function renderAll(){
     renderTagList();
 }
 
-// Initialize on DOM load and check for incoming QR scan links
 window.addEventListener("DOMContentLoaded", () => {
-    initDB()
-        .then(() => loadPartsFromDB())
-        .then(() => {
-            renderAll();
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const scannedDrawing = urlParams.get("drawing");
-            
-            if(scannedDrawing){
-                showSection("lookup");
-                lookupInput.value = scannedDrawing;
-                lookupPart();
-            }
-        })
-        .catch(err => console.error("Initialization failed:", err));
+    loadPartsFromCloud().then(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const scannedDrawing = urlParams.get("drawing");
+        if(scannedDrawing){
+            showSection("lookup");
+            lookupInput.value = scannedDrawing;
+            setTimeout(() => lookupPart(), 600);
+        }
+    });
 });
 </script>
 
