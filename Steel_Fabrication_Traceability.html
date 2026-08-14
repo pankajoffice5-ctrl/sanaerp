@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Steel Fabrication & Erection - Tag & Tracking</title>
+
+<!-- QR generator -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+:root{
+    --navy:#0d2f4a;
+    --blue:#1769aa;
+    --light:#f4f7fa;
+    --border:#cfd8df;
+    --green:#16834a;
+    --orange:#ef7d00;
+}
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--light);
+    color:#17212b;
+}
+.app-header{
+    background:linear-gradient(135deg,#0d2f4a,#1769aa);
+    color:white;
+    padding:18px 22px;
+}
+.app-header h1{margin:0;font-size:24px}
+.app-header p{margin:5px 0 0;font-size:13px;opacity:.9}
+
+.toolbar{
+    background:#fff;
+    border-bottom:1px solid var(--border);
+    padding:12px 18px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    position:sticky;
+    top:0;
+    z-index:20;
+}
+button,.file-btn{
+    border:0;
+    border-radius:6px;
+    padding:10px 14px;
+    background:var(--blue);
+    color:#fff;
+    font-weight:bold;
+    cursor:pointer;
+}
+button.secondary{background:#657784}
+button.danger{background:#b63a32}
+button:hover,.file-btn:hover{opacity:.9}
+
+.container{max-width:1500px;margin:auto;padding:18px}
+.panel{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:16px;
+}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(150px,1fr));
+    gap:10px;
+}
+label{
+    display:block;
+    font-size:11px;
+    font-weight:bold;
+    color:#4d5d69;
+}
+input,select{
+    width:100%;
+    padding:9px;
+    margin-top:4px;
+    border:1px solid #c8d2d9;
+    border-radius:5px;
+    background:white;
+}
+.cards{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:10px;
+}
+.card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:14px;
+}
+.card .number{
+    font-size:26px;
+    font-weight:900;
+    color:var(--navy);
+}
+.table-wrap{overflow:auto}
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+}
+th,td{
+    padding:8px;
+    border-bottom:1px solid #e0e6ea;
+    text-align:left;
+    white-space:nowrap;
+}
+th{background:#edf3f7}
+
+.hidden{display:none!important}
+
+/* ================================
+   PRINT TAG
+   ================================ */
+
+#printArea{display:none}
+
+.a4-sheet{
+    width:210mm;
+    height:297mm;
+    display:grid;
+    grid-template-columns:105mm 105mm;
+    grid-template-rows:148.5mm 148.5mm;
+    background:#fff;
+}
+
+/* Exact A6-size tag: 105 x 148.5 mm */
+.steel-tag{
+    width:105mm;
+    height:148.5mm;
+    border:0.45mm solid #222;
+    background:#fff;
+    padding:5.5mm;
+    position:relative;
+    overflow:hidden;
+    font-family:Arial,Helvetica,sans-serif;
+    color:#111;
+}
+
+/* Header */
+.tag-header{
+    text-align:center;
+    border-bottom:.3mm solid #777;
+    padding-bottom:2mm;
+}
+.tag-company{
+    font-size:4.0mm;
+    font-weight:900;
+    line-height:1.1;
+}
+.tag-project{
+    margin-top:1mm;
+    font-size:2.7mm;
+    font-weight:600;
+}
+.tag-title{
+    margin-top:3mm;
+    font-size:5.1mm;
+    font-weight:900;
+    line-height:1.05;
+}
+.tag-title-line{
+    margin-top:2mm;
+    border-top:.3mm dashed #555;
+}
+
+/* Main part number */
+.tag-part{
+    text-align:center;
+    font-size:11.5mm;
+    font-weight:900;
+    line-height:1;
+    padding:3.2mm 0 3mm;
+    border-bottom:.3mm dashed #555;
+}
+
+/* Content area */
+.tag-main{
+    display:grid;
+    grid-template-columns:56% 44%;
+    gap:2mm;
+    padding-top:3mm;
+}
+
+.tag-info{
+    width:100%;
+    border-collapse:collapse;
+    font-size:2.55mm;
+}
+.tag-info td{
+    border-bottom:.22mm solid #8c8c8c;
+    padding:1.45mm .6mm;
+    vertical-align:middle;
+    white-space:normal;
+}
+.tag-info td:first-child{
+    width:49%;
+    font-weight:900;
+}
+.tag-info td:nth-child(2){
+    width:51%;
+    font-weight:500;
+    word-break:break-word;
+}
+
+.tag-info-simple{
+    align-self:start;
+    margin-top:2mm;
+}
+.tag-info-simple td{
+    padding:3.1mm 1mm;
+    font-size:3.0mm;
+}
+.tag-info-simple td:first-child{
+    width:48%;
+}
+.tag-info-simple td:nth-child(2){
+    width:52%;
+    font-weight:700;
+}
+
+.tag-qr{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:55mm;
+}
+.tag-qr canvas,.tag-qr img{
+    width:34mm!important;
+    height:34mm!important;
+}
+
+/* Status footer */
+.tag-status{
+    position:absolute;
+    left:5.5mm;
+    right:5.5mm;
+    bottom:5mm;
+    border-top:.35mm dashed #555;
+    padding-top:2.5mm;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    text-align:center;
+    gap:1mm;
+}
+.status-box{
+    min-width:0;
+}
+.status-label{
+    font-size:2.3mm;
+    font-weight:900;
+}
+.status-icon{
+    width:6mm;
+    height:6mm;
+    border-radius:50%;
+    margin:1.2mm auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:3.3mm;
+    font-weight:900;
+}
+.status-value{
+    font-size:2.25mm;
+    font-weight:700;
+    line-height:1.1;
+}
+.status-green .status-icon{background:#16834a}
+.status-blue .status-icon{background:#1769aa}
+.status-purple .status-icon{background:#6546b8}
+.status-orange .status-icon{background:#ef7d00}
+
+/* Screen preview */
+.preview-wrap{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(350px,1fr));
+    gap:15px;
+}
+.preview-wrap .steel-tag{
+    transform-origin:top left;
+    width:397px;
+    height:561px;
+    padding:21px;
+    border:2px solid #222;
+}
+.preview-wrap .tag-company{font-size:15px}
+.preview-wrap .tag-project{font-size:10px}
+.preview-wrap .tag-title{font-size:19px}
+.preview-wrap .tag-part{font-size:43px}
+.preview-wrap .tag-info{font-size:9.5px}
+.preview-wrap .tag-info td{padding:5px 2px}
+.preview-wrap .tag-info-simple td{padding:12px 3px;font-size:12px}
+.preview-wrap .tag-qr{min-height:205px}
+.preview-wrap .tag-qr canvas,.preview-wrap .tag-qr img{width:129px!important;height:129px!important}
+.preview-wrap .tag-status{left:21px;right:21px;bottom:19px}
+.preview-wrap .status-label{font-size:8.5px}
+.preview-wrap .status-icon{width:23px;height:23px;font-size:13px}
+.preview-wrap .status-value{font-size:8px}
+
+@media(max-width:900px){
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .cards{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+    .grid{grid-template-columns:1fr}
+}
+
+/* PRINT */
+@media print{
+    @page{
+        size:A4 portrait;
+        margin:0;
+    }
+    html,body{
+        width:210mm;
+        height:297mm;
+        margin:0;
+        padding:0;
+        background:#fff;
+    }
+    .no-print{display:none!important}
+    #printArea{
+        display:block!important;
+        width:210mm;
+        height:297mm;
+        margin:0;
+        padding:0;
+    }
+    .a4-sheet{
+        page-break-after:always;
+        margin:0;
+    }
+    .steel-tag{
+        page-break-inside:avoid;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app-header no-print">
+    <h1>Steel Fabrication & Erection Traceability</h1>
+    <p>Part Identification • QR Tag • Fabrication • QC • Loading • Site • Erection</p>
+</div>
+
+<div class="toolbar no-print">
+    <button onclick="showSection('dashboard')">Dashboard</button>
+    <button onclick="showSection('parts')">Part Tracking</button>
+    <button onclick="showSection('tags')">Tag Generator</button>
+    <button onclick="showSection('lookup')">QR Lookup</button>
+    <button class="secondary" onclick="exportCSV()">Export CSV</button>
+
+    <label class="file-btn">
+        Import CSV
+        <input id="csvInput" type="file" accept=".csv" hidden onchange="importCSV(event)">
+    </label>
+</div>
+
+<div class="container no-print">
+
+<section id="dashboard" class="panel">
+    <h2>Dashboard</h2>
+    <div class="cards" id="dashboardCards"></div>
+</section>
+
+<section id="parts" class="panel hidden">
+    <h2>Part Tracking</h2>
+
+    <div class="grid">
+        <div><label>Project</label><input id="project"></div>
+        <div><label>Drawing</label><input id="drawing"></div>
+        <div><label>Description</label><input id="description"></div>
+        <div><label>Fabrication</label>
+            <select id="fabrication">
+                <option>Not Started</option>
+                <option>Fabricating</option>
+                <option>Complete</option>
+                <option>Hold</option>
+            </select>
+        </div>
+
+        <div><label>QC</label>
+            <select id="qc">
+                <option>Pending</option>
+                <option>Passed</option>
+                <option>Rejected</option>
+            </select>
+        </div>
+        <div><label>Loading</label>
+            <select id="loading">
+                <option>Not Loaded</option>
+                <option>Ready</option>
+                <option>Loaded</option>
+            </select>
+        </div>
+        <div><label>Erection</label>
+            <select id="erection">
+                <option>Pending</option>
+                <option>Erected</option>
+                <option>Hold</option>
+            </select>
+        </div>
+        <div><label>Erection Date</label><input id="erectionDate" type="date"></div>
+        <div><label>Custom Link / Web URL</label><input id="customLink" placeholder="https://example.com/part-details"></div>
+    </div>
+
+    <br>
+    <button onclick="savePart()">Save Part</button>
+    <button class="secondary" onclick="clearForm()">Clear</button>
+
+    <div class="table-wrap" style="margin-top:15px">
+        <table>
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Drawing</th>
+                    <th>Description</th>
+                    <th>Fabrication</th>
+                    <th>QC</th>
+                    <th>Loading</th>
+                    <th>Erection</th>
+                    <th>Custom Link</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="partTable"></tbody>
+        </table>
+    </div>
+</section>
+
+<section id="tags" class="panel hidden">
+    <h2>Tag Generator</h2>
+
+    <p>
+        <b>A4 = 4 A6 tags.</b>
+        The tag features Drawing and Description fields in a clean layout.
+    </p>
+
+    <input id="tagSearch" placeholder="Search Drawing..." oninput="renderTagList()">
+
+    <div class="table-wrap" style="margin-top:12px">
+        <table>
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Drawing</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="tagTable"></tbody>
+        </table>
+    </div>
+
+    <br>
+    <button onclick="selectAllTags()">Select All</button>
+    <button class="secondary" onclick="clearTagSelection()">Clear Selection</button>
+    <button onclick="previewTags()">Preview</button>
+    <button onclick="printSelectedTags()">Print A4 Tags</button>
+
+    <div id="preview" style="margin-top:20px"></div>
+</section>
+
+<section id="lookup" class="panel hidden">
+    <h2>QR Lookup</h2>
+    <p>Scan the QR with your phone and enter the Drawing here, or paste:</p>
+    <p><b>STEELTAG|obs-1</b></p>
+
+    <input id="lookupInput" placeholder="Drawing or STEELTAG|Drawing">
+    <br><br>
+    <button onclick="lookupPart()">Find Part</button>
+
+    <div id="lookupResult" style="margin-top:15px"></div>
+</section>
+
+</div>
+
+<div id="printArea"></div>
+
+<script>
+const DB_NAME = "SteelFabricationDB";
+const STORE_NAME = "parts";
+let db = null;
+let parts = [];
+let editingId = null;
+
+function initDB(){
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            db = request.result;
+            resolve(db);
+        };
+        request.onupgradeneeded = (event) => {
+            const database = event.target.result;
+            if(!database.objectStoreNames.contains(STORE_NAME)){
+                database.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
+            }
+        };
+    });
+}
+
+function loadPartsFromDB(){
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, "readonly");
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.getAll();
+        request.onsuccess = () => {
+            parts = request.result;
+            if(parts.length === 0){
+                // Add initial default record if empty
+                const defaultItem = {
+                    Project:"Worrier Group",
+                    Drawing:"obs-1",
+                    Description:"Obstacle-1",
+                    Fabrication:"Not Started",
+                    QC:"Passed",
+                    Loading:"Ready",
+                    Erection:"Pending",
+                    ErectionDate:"",
+                    CustomLink:""
+                };
+                const addTx = db.transaction(STORE_NAME, "readwrite");
+                addTx.objectStore(STORE_NAME).add(defaultItem);
+                addTx.oncomplete = () => {
+                    loadPartsFromDB().then(resolve).catch(reject);
+                };
+            } else {
+                resolve(parts);
+            }
+        };
+        request.onerror = () => reject(request.error);
+    });
+}
+
+function savePartToDB(p){
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, "readwrite");
+        const store = transaction.objectStore(STORE_NAME);
+        const request = editingId !== null ? store.put({ ...p, id: editingId }) : store.add(p);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+function deletePartFromDB(id){
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, "readwrite");
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.delete(id);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+function esc(v){
+    return String(v ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
+}
+
+function showSection(id){
+    document.querySelectorAll(".container > section").forEach(s => s.classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+    renderAll();
+}
+
+function getForm(){
+    return {
+        Project: project.value,
+        Drawing: drawing.value,
+        Description: description.value,
+        Fabrication: fabrication.value,
+        QC: qc.value,
+        Loading: loading.value,
+        Erection: erection.value,
+        ErectionDate: erectionDate.value,
+        CustomLink: customLink.value
+    };
+}
+
+function fillForm(p){
+    project.value = p.Project || "";
+    drawing.value = p.Drawing || "";
+    description.value = p.Description || "";
+    fabrication.value = p.Fabrication || "Not Started";
+    qc.value = p.QC || "Pending";
+    loading.value = p.Loading || "Not Loaded";
+    erection.value = p.Erection || "Pending";
+    erectionDate.value = p.ErectionDate || "";
+    customLink.value = p.CustomLink || "";
+}
+
+async function savePart(){
+    const p = getForm();
+
+    if(!p.Drawing){
+        alert("Drawing is required.");
+        return;
+    }
+
+    const duplicate = parts.find(x => x.Drawing.toLowerCase() === p.Drawing.toLowerCase() && x.id !== editingId);
+
+    if(editingId === null && duplicate){
+        alert("This Drawing already exists.");
+        return;
+    }
+
+    try {
+        await savePartToDB(p);
+        await loadPartsFromDB();
+        clearForm();
+        renderAll();
+        alert("Part saved successfully.");
+    } catch(err) {
+        console.error(err);
+        alert("Error saving part.");
+    }
+}
+
+function editPart(id){
+    const p = parts.find(x => x.id === id);
+    if(p){
+        editingId = id;
+        fillForm(p);
+        showSection("parts");
+    }
+}
+
+async function deletePart(id){
+    if(confirm("Delete this part?")){
+        try {
+            await deletePartFromDB(id);
+            await loadPartsFromDB();
+            renderAll();
+        } catch(err) {
+            console.error(err);
+            alert("Error deleting part.");
+        }
+    }
+}
+
+function clearForm(){
+    editingId = null;
+    document.querySelectorAll("#parts input").forEach(e => e.value = "");
+    fabrication.value = "Not Started";
+    qc.value = "Pending";
+    loading.value = "Not Loaded";
+    erection.value = "Pending";
+    customLink.value = "";
+}
+
+function statusClass(v){
+    if(["Complete","Passed","Loaded","Received","Erected"].includes(v)) return "ok";
+    if(["Rejected","Damaged","Hold"].includes(v)) return "bad";
+    return "warn";
+}
+
+function renderParts(){
+    partTable.innerHTML = parts.map((p)=>`
+        <tr>
+            <td><b>${esc(p.Project)}</b></td>
+            <td>${esc(p.Drawing)}</td>
+            <td>${esc(p.Description)}</td>
+            <td class="${statusClass(p.Fabrication)}">${esc(p.Fabrication)}</td>
+            <td class="${statusClass(p.QC)}">${esc(p.QC)}</td>
+            <td class="${statusClass(p.Loading)}">${esc(p.Loading)}</td>
+            <td class="${statusClass(p.Erection)}">${esc(p.Erection)}</td>
+            <td>${esc(p.CustomLink)}</td>
+            <td>
+                <button onclick="editPart(${p.id})">Edit</button>
+                <button class="danger" onclick="deletePart(${p.id})">Delete</button>
+            </td>
+        </tr>
+    `).join("");
+}
+
+function renderDashboard(){
+    const values=[
+        ["Total Parts",parts.length],
+        ["Fabricated",parts.filter(p=>p.Fabrication==="Complete").length],
+        ["QC Passed",parts.filter(p=>p.QC==="Passed").length],
+        ["Loaded",parts.filter(p=>p.Loading==="Loaded").length],
+        ["Erected",parts.filter(p=>p.Erection==="Erected").length]
+    ];
+
+    dashboardCards.innerHTML = values.map(v=>`
+        <div class="card">
+            <div>${v[0]}</div>
+            <div class="number">${v[1]}</div>
+        </div>
+    `).join("");
+}
+
+function renderTagList(){
+    const q = (tagSearch.value||"").toLowerCase();
+
+    tagTable.innerHTML = parts
+        .filter(p => JSON.stringify(p).toLowerCase().includes(q))
+        .map(p => `
+        <tr>
+            <td><input class="tagPick" type="checkbox" value="${p.id}"></td>
+            <td><b>${esc(p.Drawing)}</b></td>
+            <td>${esc(p.Description)}</td>
+            <td>${esc(p.Erection)}</td>
+        </tr>
+    `).join("");
+}
+
+function makeTag(p){
+    const tag = document.createElement("div");
+    tag.className = "steel-tag";
+
+    tag.innerHTML = `
+        <div class="tag-header">
+            <div class="tag-company">STEEL FABRICATION &amp; ERECTION</div>
+            <div class="tag-project">PROJECT: ${esc(p.Project)}</div>
+            <div class="tag-title">PART IDENTIFICATION TAG</div>
+            <div class="tag-title-line"></div>
+        </div>
+
+        <div class="tag-part">${esc(p.Drawing)}</div>
+
+        <div class="tag-main">
+            <table class="tag-info tag-info-simple">
+                <tr><td>DRAWING</td><td>${esc(p.Drawing)}</td></tr>
+                <tr><td>DESCRIPTION</td><td>${esc(p.Description)}</td></tr>
+            </table>
+
+            <div class="tag-qr"></div>
+        </div>
+
+        <div class="tag-status">
+            <div class="status-box status-green">
+                <div class="status-label">FAB:</div>
+                <div class="status-icon">${p.Fabrication==="Complete"?"✓":"!"}</div>
+                <div class="status-value">${esc(p.Fabrication)}</div>
+            </div>
+
+            <div class="status-box status-blue">
+                <div class="status-label">QC:</div>
+                <div class="status-icon">${p.QC==="Passed"?"✓":"!"}</div>
+                <div class="status-value">${esc(p.QC)}</div>
+            </div>
+
+            <div class="status-box status-purple">
+                <div class="status-label">LOAD:</div>
+                <div class="status-icon">${p.Loading==="Loaded"?"✓":"!"}</div>
+                <div class="status-value">${esc(p.Loading)}</div>
+            </div>
+
+            <div class="status-box status-orange">
+                <div class="status-label">ERECT:</div>
+                <div class="status-icon">${p.Erection==="Erected"?"✓":"!"}</div>
+                <div class="status-value">${esc(p.Erection)}</div>
+            </div>
+        </div>
+    `;
+
+    const qrBox = tag.querySelector(".tag-qr");
+
+    const targetUrl = p.CustomLink && p.CustomLink.trim() !== "" 
+        ? p.CustomLink.trim() 
+        : `https://esmartcalc.netlify.app/?drawing=${encodeURIComponent(p.Drawing)}`;
+
+    new QRCode(qrBox, {
+        text: targetUrl,
+        width: 260,
+        height: 260,
+        correctLevel: QRCode.CorrectLevel.M
+    });
+
+    return tag;
+}
+
+function selectedIds(){
+    return [...document.querySelectorAll(".tagPick:checked")].map(x => Number(x.value));
+}
+
+function selectAllTags(){
+    document.querySelectorAll(".tagPick").forEach(x => x.checked = true);
+}
+
+function clearTagSelection(){
+    document.querySelectorAll(".tagPick").forEach(x => x.checked = false);
+}
+
+function buildSheets(selected){
+    const area = document.createElement("div");
+    let sheet = null;
+
+    selected.forEach((p, i) => {
+        if(i % 4 === 0){
+            sheet = document.createElement("div");
+            sheet.className = "a4-sheet";
+            area.appendChild(sheet);
+        }
+        sheet.appendChild(makeTag(p));
+    });
+
+    return area;
+}
+
+function previewTags(){
+    const ids = selectedIds();
+
+    if(!ids.length){
+        alert("Select at least one tag.");
+        return;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.className = "preview-wrap";
+
+    ids.forEach(id => {
+        const p = parts.find(x => x.id === id);
+        if(p) wrap.appendChild(makeTag(p));
+    });
+
+    preview.innerHTML = "";
+    preview.appendChild(wrap);
+    preview.scrollIntoView({behavior:"smooth"});
+}
+
+function printSelectedTags(){
+    const ids = selectedIds();
+
+    if(!ids.length){
+        alert("Select at least one tag.");
+        return;
+    }
+
+    const selected = ids.map(id => parts.find(x => x.id === id)).filter(Boolean);
+
+    printArea.innerHTML = "";
+    printArea.appendChild(buildSheets(selected));
+
+    setTimeout(() => window.print(), 250);
+}
+
+function lookupPart(){
+    let id = lookupInput.value.trim();
+    id = id.replace(/^STEELTAG\|/i, "");
+
+    const p = parts.find(x => x.Drawing.toLowerCase() === id.toLowerCase());
+
+    if(!p){
+        lookupResult.innerHTML = `<div class="panel"><b style="color:#b63a32">Part not found.</b></div>`;
+        return;
+    }
+
+    lookupResult.innerHTML = `
+        <div class="panel">
+            <h2>${esc(p.Drawing)}</h2>
+            <p><b>Project:</b> ${esc(p.Project)}</p>
+            <p><b>Description:</b> ${esc(p.Description)}</p>
+            <p><b>Custom Link:</b> ${p.CustomLink ? `<a href="${esc(p.CustomLink)}" target="_blank">${esc(p.CustomLink)}</a>` : 'None'}</p>
+            <hr>
+            <p><b>Fabrication:</b> ${esc(p.Fabrication)}</p>
+            <p><b>QC:</b> ${esc(p.QC)}</p>
+            <p><b>Loading:</b> ${esc(p.Loading)}</p>
+            <p><b>Erection:</b> ${esc(p.Erection)}</p>
+
+            <button onclick="markErected(${p.id})">Mark Erected</button>
+        </div>
+    `;
+}
+
+async function markErected(id){
+    const p = parts.find(x => x.id === id);
+
+    if(p){
+        p.Erection = "Erected";
+        p.ErectionDate = new Date().toISOString().slice(0,10);
+        try {
+            editingId = p.id;
+            await savePartToDB(p);
+            editingId = null;
+            await loadPartsFromDB();
+            lookupInput.value = p.Drawing;
+            lookupPart();
+            renderAll();
+        } catch(err) {
+            console.error(err);
+            alert("Error updating status.");
+        }
+    }
+}
+
+function csvCell(v){
+    return `"${String(v ?? "").replace(/"/g,'""')}"`;
+}
+
+function exportCSV(){
+    const columns = [
+        "Project","Drawing","Description",
+        "Fabrication","QC","Loading","Erection","ErectionDate","CustomLink"
+    ];
+
+    const csv = [
+        columns.join(","),
+        ...parts.map(p => columns.map(c => csvCell(p[c])).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csv],{type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "Steel_Fabrication_Traceability.csv";
+    a.click();
+}
+
+function parseCSV(text){
+    const rows = [];
+    let row = [], cell = "", quoted = false;
+
+    for(let i = 0; i < text.length; i++){
+        const c = text[i];
+        const n = text[i+1];
+
+        if(c === '"' && quoted && n === '"'){
+            cell += '"';
+            i++;
+        }else if(c === '"'){
+            quoted = !quoted;
+        }else if(c === "," && !quoted){
+            row.push(cell);
+            cell = "";
+        }else if((c === "\n" || c === "\r") && !quoted){
+            if(c === "\r" && n === "\n") i++;
+            row.push(cell);
+            rows.push(row);
+            row = [];
+            cell = "";
+        }else{
+            cell += c;
+        }
+    }
+
+    if(cell.length || row.length){
+        row.push(cell);
+        rows.push(row);
+    }
+
+    return rows;
+}
+
+function importCSV(event){
+    const file = event.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = async function(){
+        const rows = parseCSV(reader.result);
+        if(rows.length < 2) return;
+
+        const headers = rows.shift();
+
+        const imported = rows
+            .filter(r => r.some(v => v.trim() !== ""))
+            .map(r => {
+                const p = {};
+                headers.forEach((h, i) => p[h] = r[i] || "");
+                delete p.id; // ensure fresh IDs
+                return p;
+            });
+
+        try {
+            const transaction = db.transaction(STORE_NAME, "readwrite");
+            const store = transaction.objectStore(STORE_NAME);
+            
+            for(const item of imported){
+                store.add(item);
+            }
+
+            transaction.oncomplete = async () => {
+                await loadPartsFromDB();
+                renderAll();
+                alert(imported.length + " parts imported.");
+            };
+        } catch(err) {
+            console.error(err);
+            alert("Error importing CSV.");
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+function renderAll(){
+    renderDashboard();
+    renderParts();
+    renderTagList();
+}
+
+// Initialize on DOM load and check for incoming QR scan links
+window.addEventListener("DOMContentLoaded", () => {
+    initDB()
+        .then(() => loadPartsFromDB())
+        .then(() => {
+            renderAll();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const scannedDrawing = urlParams.get("drawing");
+            
+            if(scannedDrawing){
+                showSection("lookup");
+                lookupInput.value = scannedDrawing;
+                lookupPart();
+            }
+        })
+        .catch(err => console.error("Initialization failed:", err));
+});
+</script>
+
+</body>
+</html>
