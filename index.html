@@ -3,8 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AL SANA Nesting | Calculator System</title>
 
+<!-- ===== SEO META TAGS (Optimized for Top Search Ranking) ===== -->
+<title>eSmart Calc | Professional Engineering, Metal Nesting & Estimation Calculators</title>
+<meta name="description" content="Free online metal estimation, free QR code generator, finance tracker, plate and pipe nesting, mobile CAD, weight calculation, and engineering tools designed for fabrication professionals.">
+<meta name="keywords" content="metal estimation, plate nesting, free QR code generator, finance tracker, pipe nesting, steel fabrication calculator, mobile CAD, weight calculator, engineering tools, eSmart Calc">
+<meta name="author" content="eSmart Calc">
+<link rel="canonical" href="https://esmartcalc.netlify.app/">
+
+<!-- ===== OPEN GRAPH / SOCIAL MEDIA META TAGS ===== -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://esmartcalc.netlify.app/">
+<meta property="og:title" content="eSmart Calc | Professional Engineering & Estimation Tools">
+<meta property="og:description" content="Accurate metal nesting, steel estimation, QR code generation, and industrial calculation tools tailored for fabrication environments.">
+<meta property="og:image" content="https://esmartcalc.netlify.app/background.png">
+
+<!-- ===== TWITTER CARD META TAGS ===== -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="eSmart Calc | Professional Engineering & Estimation Tools">
+<meta name="twitter:description" content="Accurate metal nesting, steel estimation, QR code generation, and industrial calculation tools.">
+<meta name="twitter:image" content="https://esmartcalc.netlify.app/background.png">
+<!-- Favicon / Browser Shortcut Logo -->
+<link rel="icon" type="image/png" sizes="32x32" href="logo.png">
+<link rel="apple-touch-icon" href="sana_logo.webp">
+<!-- ===== STRUCTURED DATA (SCHEMA.ORG FOR GOOGLE) ===== -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "eSmart Calc",
+  "operatingSystem": "All",
+  "applicationCategory": "BusinessApplication",
+  "description": "Professional engineering, metal nesting, estimation calculators, finance tracker, and free QR code generation tools.",
+  "url": "https://esmartcalc.netlify.app/",
+  "author": {
+    "@type": "Organization",
+    "name": "eSmart Calc"
+  }
+}
+</script>
+
+<!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
 
 <style>
@@ -12,22 +51,38 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", Roboto, Arial, sans-serif; }
 
 body {
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 30px 15px;
+  position: relative;
+  margin: 0;
+  background-color: #f4f7f6;
+}
+
+/* ===== CLICKABLE BACKGROUND IMAGE ===== */
+.bg-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
 }
 
 /* ===== DOWNLOAD ICON ===== */
 .download-icon {
   position: fixed; top: 16px; right: 16px; width: 38px; height: 38px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 8px; color: #ffffff; background: rgba(255,255,255,0.08);
+  border-radius: 8px; color: #ffffff; background: rgba(0,0,0,0.4);
   backdrop-filter: blur(6px); cursor: pointer; transition: all 0.2s ease; z-index: 1000;
 }
-.download-icon:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+.download-icon:hover { background: rgba(0,0,0,0.6); transform: translateY(-1px); }
 
 /* ===== CONTAINER ===== */
 .container {
@@ -35,24 +90,49 @@ body {
   border-radius: 22px; padding: 30px 25px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.25);
   margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
 }
 
-.header { text-align: center; margin-bottom: 30px; }
+.home-link {
+  display: inline-block;
+  margin-bottom: 15px;
+  color: #1565c0;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+.home-link:hover { text-decoration: underline; }
+
+.header { text-align: center; margin-bottom: 25px; }
 .header h1 { font-size: 24px; color: #1565c0; margin-bottom: 6px; }
 .header p { font-size: 14px; color: #666; }
 
-/* ===== BUTTONS ===== */
-.button-group { display: flex; flex-direction: column; gap: 14px; }
-button {
+/* ===== SEO TEXT DESCRIPTIONS (Crawlable Keywords) ===== */
+.seo-description {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  text-align: center;
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+/* ===== LINKS STYLED AS BUTTONS ===== */
+.button-group { display: flex; flex-direction: column; gap: 12px; }
+.btn-primary {
   width: 100%; padding: 14px; font-size: 15px; font-weight: 600;
-  border-radius: 14px; border: none; cursor: pointer;
+  border-radius: 14px; border: none; cursor: pointer; text-decoration: none;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   transition: all 0.25s ease;
+  background: linear-gradient(135deg, #1976d2, #0d47a1); color: #fff;
+  text-align: center;
 }
-.btn-primary { background: linear-gradient(135deg, #1976d2, #0d47a1); color: #fff; }
-button:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(0,0,0,0.25); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0,0,0,0.2); color: #fff; }
 
-/* ===== MODAL STYLE (For Privacy/About) ===== */
+/* ===== MODAL STYLE ===== */
 .modal {
   display: none; position: fixed; z-index: 2000; left: 0; top: 0;
   width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);
@@ -62,13 +142,24 @@ button:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(0,0,0,0
   border-radius: 15px; width: 90%; max-width: 500px; max-height: 70vh; overflow-y: auto;
 }
 .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+.close:hover { color: #000; }
 .modal-content h2 { margin-bottom: 15px; color: #1565c0; }
 .modal-content p { font-size: 14px; line-height: 1.6; color: #444; margin-bottom: 10px; }
 
 /* ===== FOOTER ===== */
-footer { text-align: center; margin-top: 10px; font-size: 12px; color: #fff; opacity: 0.8; }
+footer { 
+  text-align: center; 
+  margin-top: 10px; 
+  font-size: 12px; 
+  color: #fff; 
+  opacity: 0.95; 
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
 .footer-links { margin-bottom: 10px; }
 .footer-links span { cursor: pointer; text-decoration: underline; margin: 0 10px; }
+.footer-links span:hover { color: #e3f2fd; }
 
 @media (max-width: 480px) {
   .container { padding: 25px 20px; }
@@ -79,86 +170,89 @@ footer { text-align: center; margin-top: 10px; font-size: 12px; color: #fff; opa
 
 <body>
 
-<a href="Sana_smart_0.1.apk" download class="download-icon" title="Download App">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+<!-- Clickable Background Link -->
+<a href="esmart_calc.html" class="bg-link" aria-label="Background Link"></a>
+
+<a href="eSmart_Calculator.apk" download class="download-icon" title="Download Android App" aria-label="Download Android App">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
     <path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
   </svg>
 </a>
 
-<div class="container">
-  <div class="header">
-    <h1>Al Sana Smart Integration System</h1>
-    <p>Advanced Nesting & steel Weight Calculator System</p>
+<main class="container">
+  <a href="esmart_calc.html" class="home-link">🏠 Home</a>
+  <header class="header">
+    <h1>eSmart Calc</h1>
+    <p>Nesting, Estimation & Utility Calculator Suite</p>
+  </header>
+
+  <!-- Hidden keyword-rich context text for search crawlers -->
+  <div class="seo-description">
+    Welcome to <strong>eSmart Calc</strong>, your hub for online metal estimation, free QR code generation, plate and pipe nesting, finance trackers, and structural steel calculation tools.
   </div>
 
-  <div class="button-group">
-    <button class="btn-primary" onclick="openPage('Sales_Enquery.html')">📈 Sales Enquery</button>
-    <button class="btn-primary" onclick="openPage('metal_wt.html')">⚖️ Metal Weight</button>
-    <button class="btn-primary" onclick="openPage('nesting.html')">📐 Plate/Pipes Nesting</button>
-    <button class="btn-primary" onclick="openPage('for_diagonal.html')">📏 Diagonal Calculator</button>
-    <button class="btn-primary" onclick="openPage('erp.html')">💼 ERP</button>
-
-    <button class="btn-primary" onclick="openPage('my_task.html')">✅ My To-Do List</button>
-    <button class="btn-primary" onclick="openPage('SUPPLIER CONTACTS.html')">📞 Suppliers Contacts</button>
-    <button class="btn-primary" onclick="openPage('AttendanceFormatter.html')">🕒 Attendance Formatter</button>
-    <button class="btn-primary" onclick="openPage('dubal.html')">🕵️ Anode Rod Report</button>
-    <button class="btn-primary" onclick="openPage('inpection.html')">🕵️ QA/QC Report</button>
-    <button class="btn-primary" onclick="openPage('Steel_Fabrication_Traceability.html')">🏷️ IDENTIFICATION TAG</button>
-    
-    <!-- Hidden QA/QC Report Button -->
-    <button class="btn-primary" onclick="openPage('pankaj_visiting.html')" style="display: none;">🕵️ pankaj visting card</button>
-    <button class="btn-primary" onclick="openPage('inspect.html')" style="display: none;">🕵️ pankaj visting card</button>
-    <button class="btn-primary" onclick="openPage('venket.html')" style="display: none;">🕵️ pankaj visting card</button>
-  </div>
-</div>
+  <!-- True HTML Anchor Links for Maximum SEO Crawlability -->
+  <nav class="button-group" aria-label="Calculators and Tools Navigation">
+    <a href="finance.html" class="btn-primary">💰 My Money Tracker</a>
+    <a href="qr_code.html" class="btn-primary">⛶ Free QR Code Generator</a>
+    <a href="mobile_cad.html" class="btn-primary">✏️ Mobile CAD</a>
+    <a href="nesting.html" class="btn-primary">● Plate/Pipes Nesting</a>
+    <a href="helical.html" class="btn-primary">● Helical Calculator</a>
+    <a href="for_diagonal.html" class="btn-primary">⊿ Diagonal Calculator</a>
+    <a href="estimation.html" class="btn-primary">📊 Metal Estimation</a>
+    <a href="CALCULATOR.html" class="btn-primary">🖩 Basic Calculator</a>
+    <a href="HYDRAOLIC.html" class="btn-primary">🧮 Hydraulic Force Calculator</a>
+    <a href="VOLUME CALCULATOR.html" class="btn-primary">🛢 Volume Calculator (ltr)</a>
+    <a href="agriculture.html" class="btn-primary">⬜ Area Calculator</a>
+    <a href="vatcalulator.html" class="btn-primary">💰 VAT Calculator</a>
+    <a href="pregency.html" class="btn-primary">🤰 Pregnancy Calculator</a>
+    <a href="BMI.html" class="btn-primary">⚖️ BMI Calculator</a>
+    <a href="comp_and_sip.html" class="btn-primary">📈 SIP/Compound Interest Calculator</a>
+    <a href="sleep_calculator.html" class="btn-primary">😴 Sleep Calculator</a>
+    <a href="calories.html" class="btn-primary">🔥 Calories Calculator</a>
+  </nav>
+</main>
 
 <footer>
   <div class="footer-links">
-    <span onclick="showModal('aboutModal')">About Us</span> | 
-    <span onclick="showModal('privacyModal')">Privacy Policy</span>
+    <span onclick="showModal('aboutModal')" role="button" tabindex="0">About Us</span> | 
+    <span onclick="showModal('privacyModal')" role="button" tabindex="0">Privacy Policy</span>
   </div>
-  © 2026 AL SANA Calc · All Rights Reserved
+  &copy; 2026 eSmart Calc &middot; All Rights Reserved
 </footer>
 
-<div id="aboutModal" class="modal">
+<!-- About Modal -->
+<div id="aboutModal" class="modal" role="dialog" aria-labelledby="aboutModalTitle">
   <div class="modal-content">
-    <span class="close" onclick="hideModal('aboutModal')">&times;</span>
-    <h2>About Us</h2>
-    <p>Welcome to <strong>AL SANA Calc</strong>. We provide a comprehensive suite of professional engineering and nesting tools designed to simplify complex calculations for metal fabrication and industrial estimation.</p>
-    <p>Our mission is to provide accurate, fast, and easy-to-use calculation tools for professionals worldwide.</p>
+    <span class="close" onclick="hideModal('aboutModal')" aria-label="Close modal">&times;</span>
+    <h2 id="aboutModalTitle">About Us</h2>
+    <p>Welcome to <strong>eSmart Calc</strong>. We provide a comprehensive suite of professional engineering, metal nesting, financial trackers, and utility tools designed to simplify complex calculations for industrial estimation and daily use.</p>
   </div>
 </div>
 
-<div id="privacyModal" class="modal">
+<!-- Privacy Policy Modal -->
+<div id="privacyModal" class="modal" role="dialog" aria-labelledby="privacyModalTitle">
   <div class="modal-content">
-    <span class="close" onclick="hideModal('privacyModal')">&times;</span>
-    <h2>Privacy Policy</h2>
-    <p><strong>Effective Date:</strong> January 2025</p>
-    <p>At AL SANA Calc, we prioritize your privacy. This policy explains how we handle your data.</p>
-    <p><strong>1. Information Collection:</strong> We do NOT collect any personal information, login data, or location tracking. All calculations are performed locally on your device.</p>
-    <p><strong>2. Cookies & Advertising:</strong> We use Google AdSense to serve ads. Google may use cookies to serve ads based on your prior visits to our website.</p>
-    <p><strong>3. Third-Party Links:</strong> Our site contains links to other pages. We are not responsible for the privacy practices of external sites.</p>
-    <p><strong>4. Contact:</strong> For any questions, please reach out via our official support channels.</p>
+    <span class="close" onclick="hideModal('privacyModal')" aria-label="Close modal">&times;</span>
+    <h2 id="privacyModalTitle">Privacy Policy</h2>
+    <p><strong>Effective Date:</strong> January 2026</p>
+    <p>At eSmart Calc, we prioritize your privacy. All calculations and data inputs are securely processed locally on your device.</p>
   </div>
 </div>
 
 <script>
-function openPage(page) { window.location.href = page; }
-
 function showModal(id) { document.getElementById(id).style.display = "block"; }
 function hideModal(id) { document.getElementById(id).style.display = "none"; }
 
-// Close modal if clicking outside of it
 window.onclick = function(event) {
   if (event.target.className === 'modal') {
     event.target.style.display = "none";
   }
 }
-
-
 </script>
+
 <script>
     // Disable right-click context menu
     document.addEventListener("contextmenu", function(e) {
@@ -167,17 +261,12 @@ window.onclick = function(event) {
 
     // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, etc.
     document.addEventListener("keydown", function(e) {
-        // F12 key
         if (e.key === "F12") {
             e.preventDefault();
         }
-        
-        // Ctrl+Shift+I or Ctrl+Shift+J or Ctrl+Shift+C (Chrome/Edge/Firefox DevTools)
         if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c")) {
             e.preventDefault();
         }
-        
-        // Ctrl+U (View Source)
         if (e.ctrlKey && (e.key === "U" || e.key === "u")) {
             e.preventDefault();
         }
